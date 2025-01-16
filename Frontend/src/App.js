@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import { Box } from "@mui/material";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 // import { AppProvider } from "./Context/AppProvider";
+import './App.css'
 
 function App() {
   return (

@@ -20,10 +20,12 @@ import {
   Divider,
   Fab,
   FormControl,
+  FormControlLabel,
   Grid,
   ImageList,
   ImageListItem,
   InputLabel,
+  InputBase,
   List,
   ListItem,
   MenuItem,
@@ -37,26 +39,26 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
-  Typography
-} from '@mui/material'
+  Typography,
+} from "@mui/material";
 
 // Icons
-import Add from '@mui/icons-material/Add'
+import Add from "@mui/icons-material/Add";
 
 /* Layout
    ------ */
-export const _Box = () => <Box />
+export const _Box = () => <Box />;
 
-export const _Container = () => <Container />
+export const _Container = () => <Container />;
 
 export const _Grid = () => (
   <Grid container>
     <Grid item />
     <Grid item />
   </Grid>
-)
+);
 
-export const _Stack = () => <Stack />
+export const _Stack = () => <Stack />;
 
 export const _ImageList = () => (
   <ImageList>
@@ -77,7 +79,7 @@ export const _ImageList = () => (
       />
     </ImageListItem>
   </ImageList>
-)
+);
 
 /* Inputs
    ------ */
@@ -86,20 +88,20 @@ export const _Autocomplete = () => (
   <Autocomplete
     id="free-solo-demo"
     freeSolo
-    options={['One', 'Two', 'Three']}
+    options={["One", "Two", "Three"]}
     renderInput={(params) => (
       <TextField
         {...params}
         label="enter text"
         margin="normal"
         variant="outlined"
-        sx={{ backgroundColor: 'white' }}
+        sx={{ backgroundColor: "white" }}
       />
     )}
   />
-)
+);
 
-export const _Button = () => <Button>Button</Button>
+export const _Button = () => <Button>Button</Button>;
 
 export const _ButtonGroup = () => (
   <ButtonGroup variant="contained" aria-label="outlined primary button group">
@@ -107,9 +109,9 @@ export const _ButtonGroup = () => (
     <Button>Two</Button>
     <Button>Three</Button>
   </ButtonGroup>
-)
+);
 
-export const _Checkbox = () => <Checkbox />
+export const _Checkbox = () => <Checkbox />;
 
 /* Disabled because Checkbox is not imported
 export const _Checkbox_with_label = () => (
@@ -117,7 +119,7 @@ export const _Checkbox_with_label = () => (
 )
 */
 
-export const _Radio = () => <Radio />
+export const _Radio = () => <Radio />;
 
 /* Disabled because Radio is not imported
 export const _Radio_with_label = () => (
@@ -129,11 +131,11 @@ export const _Fab = () => (
   <Fab color="primary" aria-label="add">
     <Add />
   </Fab>
-)
+);
 
 export const _Rating = () => {
-  return <Rating value={3} />
-}
+  return <Rating value={3} />;
+};
 
 export const _Select = () => (
   <FormControl fullWidth>
@@ -144,17 +146,19 @@ export const _Select = () => (
       <MenuItem value={3}>Three</MenuItem>
     </Select>
   </FormControl>
-)
+);
 
-export const _Slider = () => <Slider />
+export const _Slider = () => <Slider />;
 
-export const _Switch = () => <Switch />
+export const _Switch = () => <Switch />;
 
 export const _TextField = () => {
-  return <TextField label="Text Field" />
-}
+  return <TextField label="Text Field" />;
+};
 
-export const _ToggleButton = () => <ToggleButton value={1}>Button</ToggleButton>
+export const _ToggleButton = () => (
+  <ToggleButton value={1}>Button</ToggleButton>
+);
 
 export const _ToggleButtonGroup = () => (
   <ToggleButtonGroup color="primary" exclusive>
@@ -162,25 +166,28 @@ export const _ToggleButtonGroup = () => (
     <ToggleButton value={2}>Two</ToggleButton>
     <ToggleButton value={3}>Three</ToggleButton>
   </ToggleButtonGroup>
-)
+);
 
 // Display Data
 
-export const _Avatar = () => <Avatar>Aa</Avatar>
+export const _Avatar = () => <Avatar>Aa</Avatar>;
 
 export const _Avatar_image = () => (
   <Avatar alt="Jay Doe" src="https://randomuser.me/api/portraits/lego/5.jpg" />
-)
+);
 
 export const _Badge = () => (
   <Badge color="secondary" badgeContent={1}>
-    <Box component="span" sx={{ width: 30, height: 30, background: 'gray' }}></Box>
+    <Box
+      component="span"
+      sx={{ width: 30, height: 30, background: "gray" }}
+    ></Box>
   </Badge>
-)
+);
 
-export const _Chip = () => <Chip label="Chip" />
+export const _Chip = () => <Chip label="Chip" />;
 
-export const _Divider = () => <Divider />
+export const _Divider = () => <Divider />;
 
 export const _List = () => (
   <List>
@@ -188,32 +195,38 @@ export const _List = () => (
     <ListItem>Two</ListItem>
     <ListItem>Three</ListItem>
   </List>
-)
+);
 
 export const _Tooltip = () => (
   <Tooltip title="Tooltip">
     <Box />
   </Tooltip>
-)
+);
 
-export const _Typography = () => <Typography>Text</Typography>
-export const _Typography_heading = () => <Typography variant="h1">Heading</Typography>
-export const _Typography_subtitle = () => <Typography variant="subtitle1">Subtitle</Typography>
-export const _Typography_body = () => <Typography variant="body1">Body</Typography>
+export const _Typography = () => <Typography>Text</Typography>;
+export const _Typography_heading = () => (
+  <Typography variant="h1">Heading</Typography>
+);
+export const _Typography_subtitle = () => (
+  <Typography variant="subtitle1">Subtitle</Typography>
+);
+export const _Typography_body = () => (
+  <Typography variant="body1">Body</Typography>
+);
 
 /* Feedback
    -------- */
 
-export const _Alert = () => <Alert severity="warning">Alert</Alert>
+export const _Alert = () => <Alert severity="warning">Alert</Alert>;
 
 export const _Alert_with_title = () => (
   <Alert severity="warning">
     <AlertTitle>Title</AlertTitle>
     Description
   </Alert>
-)
+);
 
-export const _Backdrop = () => <Backdrop open />
+export const _Backdrop = () => <Backdrop open />;
 
 export const _Dialog = () => (
   <Dialog
@@ -223,11 +236,16 @@ export const _Dialog = () => (
   >
     <DialogTitle id="alert-dialog-title">Title</DialogTitle>
     <DialogContent>
-      <DialogContentText id="alert-dialog-description">Description</DialogContentText>
+      <DialogContentText id="alert-dialog-description">
+        Description
+      </DialogContentText>
     </DialogContent>
     <DialogActions>
       <Button>Disagree</Button>
       <Button autoFocus>Agree</Button>
     </DialogActions>
   </Dialog>
-)
+);
+
+export const _FormControlLabel = () => <FormControlLabel />;
+export const _InputBase = () => <InputBase />;
