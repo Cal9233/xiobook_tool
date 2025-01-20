@@ -40,6 +40,6 @@ async function updateAdminPassword() {
     }
 }
 
-updateAdminPassword();
+//updateAdminPassword();
 
 module.exports = con;

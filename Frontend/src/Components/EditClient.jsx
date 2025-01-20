@@ -33,9 +33,11 @@ const EditClient = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log(id)
     axios
       .get('http://localhost:1337/auth/client/' + id)
       .then((result) => {
+        console.log({result})
         const data = result.data.Result[0];
         setClient({
           name: data.name,

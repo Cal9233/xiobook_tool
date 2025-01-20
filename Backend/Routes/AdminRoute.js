@@ -178,96 +178,6 @@ router.post("/register", async (req, res) => {
     res.json({ Status: true, user: req.user });
   });
 
-// Admin login
-// router.post("/adminlogin", (req, res) => {
-//   const sql = "SELECT * FROM users WHERE email = ?";
-//   con.query(sql, [req.body.email], (err, result) => {
-//     if (err) return res.json({ loginStatus: false, Error: "Query error" });
-    
-//     if (result.length > 0) {
-//       const user = result[0];
-      
-//       // Compare hashed password from the database with the input password
-//       bcrypt.compare(req.body.password, user.password, (err, response) => {
-//         if (err || !response)
-//           return res.json({ loginStatus: false, Error: "Wrong email or password" });
-
-//         const token = jwt.sign(
-//           { role: user.role, email: user.email, id: user.id },
-//           "jwt_secret_key",
-//           { expiresIn: "1d" }
-//         );
-//         res.cookie("token", token);
-//         return res.json({ loginStatus: true });
-//       });
-//     } else {
-//       return res.json({ loginStatus: false, Error: "Wrong email or password" });
-//     }
-//   });
-// });
-
-
-// router.post("/adminlogin", async (req, res) => {
-//     try {
-//       console.log("Login attempt with email:", req.body.email);
-  
-//       // Step 1: Query the database to get the user based on email
-//       const sql = "SELECT user_id, email, password, roleid FROM users WHERE email = ? LIMIT 1";
-      
-//       const [results] = await new Promise((resolve, reject) => {
-//         con.query(sql, [req.body.email], (err, results) => {
-//           if (err) reject(err);
-//           resolve(results);
-//         });
-//       });
-  
-//       if (!results || results.length === 0) {
-//         console.log("No user found with email:", req.body.email);
-//         return res.json({ loginStatus: false, Error: "Wrong email or password" });
-//       }
-  
-//       const user = results[0];
-//       console.log("User found:", user);
-  
-//       // For first-time setup: How to properly hash a password
-//       // const hashedPassword = await bcrypt.hash('mysecurepassword', 10);
-//       // Then store hashedPassword in database
-  
-//       // Step 2: Compare the password
-//       const passwordMatch = await bcrypt.compare(req.body.password, user.password);
-  
-//       if (!passwordMatch) {
-//         console.log("Password comparison failed");
-//         return res.json({ loginStatus: false, Error: "Wrong email or password" });
-//       }
-  
-//       // Step 3: Generate JWT token
-//       const token = jwt.sign(
-//         { 
-//           role: user.roleid, 
-//           email: user.email, 
-//           id: user.user_id 
-//         },
-//         "jwt_secret_key",
-//         { expiresIn: "1d" }
-//       );
-  
-//       // Set cookie and send response
-//       res.cookie("token", token, { 
-//         httpOnly: true, 
-//         secure: process.env.NODE_ENV === 'production', 
-//         sameSite: 'Strict'
-//       });
-  
-//       return res.json({ loginStatus: true });
-  
-//     } catch (error) {
-//       console.error("Login error:", error);
-//       return res.status(500).json({ loginStatus: false, Error: "Internal server error" });
-//     }
-//   });
-  
-
 // Image upload configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -307,10 +217,8 @@ router.post("/add_employee", upload.single("image"), (req, res) => {
 //     return res.json({ Status: true, Result: result });
 //   });
 // });
-router.get("/employees", (req, res) => {
-    // Assuming user_id is available from the logged-in session or JWT token
-    const userId = req.user_id;  // You can set this from the session or JWT
-  
+router.get("/employees/all/:userId", (req, res) => {
+    const userId = req.params.userId; 
     // SQL query to fetch employees linked to the clients that the user has access to
     const sql = `
       SELECT e.*, c.name AS client_name 
@@ -367,78 +275,71 @@ router.delete("/delete_employee/:id", (req, res) => {
 });
 
 // Get all clients
-router.get("/clients", (req, res) => {
-  const sql = "SELECT * FROM clients";
-  con.query(sql, (err, result) => {
-    if (err) return res.json({ Status: false, Error: "Query Error" });
-    return res.json({ Status: true, Result: result });
-  });
-});
-
-// Get client by ID
-router.get("/client/:id", (req, res) => {
-    const id = req.params.id;
-    console.log(id)
+router.get("/clients/all/:userId", (req, res) => {
+    const userId = req.params.userId;
     const sql = "SELECT * FROM clients WHERE user_id = ?";
-    con.query(sql, [id], (err, result) => {
+    con.query(sql, [userId], (err, result) => {
       if (err) return res.json({ Status: false, Error: "Query Error" });
       return res.json({ Status: true, Result: result });
     });
   });
 
+  // Get client by ID
+router.get("/client/:id", (req, res) => {
+  const id = req.params.id;
+  const sql = "SELECT * FROM clients WHERE client_id = ?";
+  con.query(sql, [id], (err, result) => {
+    if (err) return res.json({ Status: false, Error: "Query Error" });
+    return res.json({ Status: true, Result: result });
+  });
+});
 
+// add client
+router.post("/add_client/:id", (req, res) => {
+  const id = req.params.id;
+  const { name, company_name, ein, address, city, entity_corp, state, owner_address, phone_num } = req.body;
 
+  const cidSql = "SELECT * FROM clients WHERE user_id = ? ORDER BY CAST(company_id AS UNSIGNED) DESC LIMIT 1;";
 
-  router.post("/add_client", (req, res) => {
-    const { name, company_name, ein, address, city, entity_corp, state, owner_address, phone_num } = req.body;
-  
-    // Step 1: Insert the new user into the users table
-    const insertUserSql = `
-      INSERT INTO users (name) 
-      VALUES (?);
-    `;
-  
-    con.query(insertUserSql, [name], (err, userResult) => {
+  con.query(cidSql, [id], (err, result) => {
+    if (err) return res.json({ Status: false, Error: err });
+
+    let largestId = result[0]?.company_id || '000'; // Default to '000' if no rows exist
+    let updateId = String(parseInt(largestId) + 1).padStart(3, '0'); // Increment and pad with leading zeros
+
+    const sql = `INSERT INTO clients 
+    (name, user_id, company_id, company_name, ein, address, city, entity_corp, state, owner_address, phone_num) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    const values = [
+      name,
+      id,
+      updateId,
+      company_name,
+      ein,
+      address,
+      city,
+      entity_corp,
+      state,
+      owner_address,
+      phone_num,
+    ];
+
+    con.query(sql, values, (err, clientResult) => {
       if (err) return res.json({ Status: false, Error: err });
-  
-      // Get the newly inserted user_id
-      const newUserId = userResult.insertId;
-  
-      // Step 2: Insert the new client using the generated user_id and company_id
-      const insertClientSql = `
-        INSERT INTO clients 
-          (user_id, company_id, name, company_name, ein, address, city, entity_corp, state, owner_address, phone_num)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-      `;
-      
-      const values = [
-        newUserId,  // The new user_id
-        req.body.company_id, // Assuming company_id is passed in the request body
-        name,
-        company_name,
-        ein,
-        address,
-        city,
-        entity_corp,
-        state,
-        owner_address,
-        phone_num
-      ];
-  
-      con.query(insertClientSql, values, (err, clientResult) => {
-        if (err) return res.json({ Status: false, Error: err });
-  
-        return res.json({
-          Status: true,
-          user_id: newUserId,
-          message: "Client and user created successfully!"
-        });
+
+      return res.json({
+        Status: true,
+        client_id: clientResult.insertId, // Retrieve the auto-incremented client_id
+        message: "Client created successfully!",
       });
     });
-  });  
+  });
+});
 
 // Update client
 router.put("/edit_client/:id", (req, res) => {
+  console.log('hit edit client route')
     const id = req.params.id;
     const sql = `UPDATE clients 
                  SET name = ?, company_name = ?, ein = ?, address = ?,
@@ -458,9 +359,28 @@ router.put("/edit_client/:id", (req, res) => {
     ];
     con.query(sql, [...values, id], (err, result) => {
       if (err) return res.json({ Status: false, Error: "Query Error" + err });
+      console.log({result})
+      return res.json({ Status: true });
+    });
+});
+
+// delete client
+router.delete("/delete_client/:id", (req, res) => {
+  let id = req.params.id
+  
+  // First delete employees
+  const deleteEmployees = "DELETE FROM employees WHERE client_id = ?";
+  con.query(deleteEmployees, [id], (err, result) => {
+    if (err) return res.json({ Status: false, Error: "Query Error" + err });
+    
+    // Then delete client
+    const deleteClient = "DELETE FROM clients WHERE client_id = ?";
+    con.query(deleteClient, [id], (err, result) => {
+      if (err) return res.json({ Status: false, Error: "Query Error" + err });
       return res.json({ Status: true });
     });
   });
+});
 
 // Register
 // Example for hashing password during user registration

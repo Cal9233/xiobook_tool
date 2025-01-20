@@ -1,14 +1,18 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Client = () => {
   const [client, setClient] = useState([]);
   const navigate = useNavigate()
+  const user = JSON.parse(localStorage.getItem('user'))
+  let userId = user.id
 
   useEffect(() => {
     axios
-      .get("http://localhost:1337/auth/clients")
+      .get(`http://localhost:1337/auth/clients/all/${userId}`)
       .then((result) => {
         if (result.data.Status) {
           setClient(result.data.Result);
@@ -17,16 +21,24 @@ const Client = () => {
         }
       })
       .catch((err) => console.log(err));
-  }, []);
-  const handleDelete = (id) => {
-    axios.delete('http://localhost:3000/auth/delete_client/'+id)
-    .then(result => {
-        if(result.data.Status) {
-            window.location.reload()
-        } else {
-            alert(result.data.Error)
-        }
-    })
+  }, [client]);
+
+  const handleDelete = (id, clientName) => {
+    if (window.confirm(`Are you sure you want to delete ${clientName}? This will also delete all associated employees.`)) {
+      axios.delete('http://localhost:1337/auth/delete_client/'+id)
+      .then(result => {
+          if(result.data.Status) {
+              // Update the client list without reloading the page
+              setClient(client.filter(c => c.client_id !== id));
+              toast.success('Client successfully deleted!');
+          } else {
+              toast.error(result.data.Error);
+          }
+      })
+      .catch(error => {
+          toast.error('An error occurred while deleting the client');
+      });
+    }
   } 
   
   return (
@@ -44,24 +56,25 @@ const Client = () => {
               <th>Name</th>
               <th>Company Name</th>
               <th>Contact Number</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {client.map((e) => (
-              <tr>
+              <tr key={e.client_id}>
                 <td>{e.name}</td>
                 <td>{e.company_name}</td>
                 <td>{e.phone_num}</td>
                 <td>
                   <Link
-                    to={`/dashboard/edit_client/` + e.id}
+                    to={`/dashboard/edit_client/${e.client_id}`}
                     className="btn btn-info btn-sm me-2"
                   >
                     Edit
                   </Link>
                   <button
                     className="btn btn-warning btn-sm"
-                    onClick={() => handleDelete(e.id)}
+                    onClick={() => handleDelete(e.client_id, e.name)}
                   >
                     Delete
                   </button>
@@ -71,6 +84,7 @@ const Client = () => {
           </tbody>
         </table>
       </div>
+      <ToastContainer />
     </div>
   );
 };

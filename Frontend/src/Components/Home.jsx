@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const Home = () => {
   const [clientTotal, setClientTotal] = useState(0);
-  const [employeeTotal, setemployeeTotal] = useState(0);
+  const [employeeTotal, setEmployeeTotal] = useState(0);
   const [admins, setAdmins] = useState([]);
   const navigate = useNavigate(); // Initialize useNavigate
 
@@ -14,7 +14,9 @@ const Home = () => {
   }, [])
 
   const AdminRecords = () => {
-    axios.get('http://localhost:1337/auth/clients')
+    let user = JSON.parse(localStorage.getItem('user'))
+    let userId = user.id
+    axios.get(`http://localhost:1337/auth/clients/all/${userId}`)
     .then(result => {
       if(result.data.Status) {
         setAdmins(result.data.Result)
@@ -24,19 +26,20 @@ const Home = () => {
     .catch(err => console.log(err))
   }
 
-  const employeeCount = () => {
-    axios.get('http://localhost:1337/auth/employees')
-    .then(result => {
-      console.log(result)
-      if(result.data.Status) {
-        setemployeeTotal(result.data.Result.length)
-      }
-    })
-    .catch(err => console.log(err))
-  }
+const employeeCount = () => {
+  let user = JSON.parse(localStorage.getItem('user'))
+  let userId = user.id
+  axios.get(`http://localhost:1337/auth/employees/all/${userId}`)
+  .then((result) => {
+    if(result.data.Status){
+      setEmployeeTotal(result.data.Result.length)
+    }
+  })
+  .catch((e) => console.log(e))
+}
 
   const handleEdit = (userId) => {
-    navigate(`/dashboard/edit_client/${userId}`); // Navigate to the edit page
+    navigate(`/dashboard/edit_client/${userId}`);
   }
 
   return (
@@ -68,7 +71,7 @@ const Home = () => {
         <table className='table'>
           <thead>
             <tr>
-              <th>Email</th>
+              <th>Client Name</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -80,7 +83,7 @@ const Home = () => {
                   <td>
                     <button
                       className="btn btn-info btn-sm me-2"
-                      onClick={() => handleEdit(a.user_id)} // Pass the user_id to handleEdit
+                      onClick={() => handleEdit(a.client_id)}
                     >
                       Edit
                     </button>

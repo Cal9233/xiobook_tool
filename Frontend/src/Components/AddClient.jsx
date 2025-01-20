@@ -1,29 +1,30 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const AddClient = () => {
-    const [client, setClient] = useState({
-        name: "",
-        company_name: "",
-        ein: "",
-        address: "",
-        entity_corp: "",
-        city: "",
-        state: "",
-        owner_address: "",
-        phone_num: "",
-    });
+  const [client, setClient] = useState({
+      name: "",
+      company_name: "",
+      ein: "",
+      address: "",
+      entity_corp: "",
+      city: "",
+      state: "",
+      owner_address: "",
+      phone_num: "",
+  });
+  const user = JSON.parse(localStorage.getItem('user'))
+  let userId = user.id
   const navigate = useNavigate()
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Submitting form with data: ", client); // Debugging log
-  
     axios
-      .post('http://localhost:1337/auth/add_client', client)
+      .post(`http://localhost:1337/auth/add_client/${userId}`, client)
       .then(result => {
           console.log("API Response: ", result); // Log the result to check the response structure
           
@@ -52,7 +53,7 @@ const AddClient = () => {
         <h3 className="text-center">Add Client</h3>
         <form className="row g-1" onSubmit={handleSubmit}>
         <div className="col-12">
-            <label for="inputName" className="form-label">
+            <label htmlFor="inputName" className="form-label">
               Name
             </label>
             <input
@@ -67,7 +68,7 @@ const AddClient = () => {
             />
           </div>
           <div className="col-12">
-            <label for="inputCompanyName" className="form-label">
+            <label htmlFor="inputCompanyName" className="form-label">
               Company Name
             </label>
             <input
@@ -83,7 +84,7 @@ const AddClient = () => {
             />
           </div>
           <div className='col-12'>
-            <label for="inputein" className="form-label">
+            <label htmlFor="inputein" className="form-label">
               Ein #
             </label>
             <input
@@ -99,7 +100,7 @@ const AddClient = () => {
             />
           </div>
           <div className="col-12">
-            <label for="inputAddress" className="form-label">
+            <label htmlFor="inputAddress" className="form-label">
               Address
             </label>
             <input
@@ -115,7 +116,7 @@ const AddClient = () => {
             />
           </div>
           <div className="col-12">
-            <label for="inputOwnerAddress" className="form-label">
+            <label htmlFor="inputOwnerAddress" className="form-label">
               Owner Address
             </label>
             <input
@@ -130,7 +131,7 @@ const AddClient = () => {
             />
           </div>
           <div className="col-12">
-            <label for="inputEntityCorp" className="form-label">
+            <label htmlFor="inputEntityCorp" className="form-label">
               Entity Corporation
             </label>
             <input
@@ -146,7 +147,7 @@ const AddClient = () => {
             />
           </div>
           <div className='col-12'>
-            <label for="inputcity" className="form-label">
+            <label htmlFor="inputcity" className="form-label">
               City
             </label>
             <input
@@ -162,7 +163,7 @@ const AddClient = () => {
             />
           </div>
           <div className="col-12">
-            <label for="inputState" className="form-label">
+            <label htmlFor="inputState" className="form-label">
               State
             </label>
             <input
@@ -178,7 +179,7 @@ const AddClient = () => {
             />
           </div>
           <div className="col-12">
-            <label for="inputPhoneNumber" className="form-label">
+            <label htmlFor="inputPhoneNumber" className="form-label">
               Phone Number #
             </label>
             <input
