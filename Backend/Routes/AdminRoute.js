@@ -6,6 +6,312 @@ const multer = require("multer");
 const path = require("path");
 const router = express.Router();
 
+
+////// Employee_Info Routes ////////
+
+// Get employee_info by ID
+router.get("/employee_info/:id", (req, res) => {
+  const id = req.params.id;
+  const sql = "SELECT * FROM employee_info WHERE employee_id = ?";
+  con.query(sql, [id], (err, result) => {
+    if (err) {
+      console.error("Query error:", err);
+      return res.json({ Status: false, Error: "Query Error" });
+    }
+
+    if (result.length > 0) {
+      // Data exists
+      return res.json({ Status: true, Result: result });
+    } else {
+      // No data found
+      return res.json({ Status: false, Result: null, Message: "No data found for the employee" });
+    }
+  });
+});
+
+/////// Add employee_info ////////
+// Add employee
+router.post("/add_employee_info/:employeeId", (req, res) => {
+  console.log("=== Add Employee Info Route Start ===");
+  console.log("Employee ID from params:", req.params.employeeId);
+  console.log("Request body:", JSON.stringify(req.body, null, 2));
+
+  let employee_id = req.params.employeeId;
+  
+  const sql = `INSERT INTO employees 
+    (employee_id, date, check_number, gross_wages_per_week, fed_income_tax_wh, soc_sec, medicare, futa_annual_er, 
+    ca_pit_wh, sdi, sui, ett, net_wages) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+  const values = [
+    employee_id,
+    req.body.date,
+    req.body.check_number,
+    req.body.gross_wages_per_week,
+    req.body.fed_income_tax_wh,
+    req.body.soc_sec,
+    req.body.medicare,
+    req.body.futa_annual_er,
+    req.body.ca_pit_wh,
+    req.body.sdi,
+    req.body.sui,
+    req.body.ett,
+    req.body.net_wages
+  ];
+
+  console.log("SQL Query:", sql);
+  console.log("Values array:", values);
+
+  // There's a potential issue here - [values] creates a nested array
+  // Let's fix that and add more logging
+  con.query(sql, values, (err, result) => {
+    if (err) {
+      console.log("=== Database Error ===");
+      console.log("Error:", err);
+      console.log("Error SQL State:", err.sqlState);
+      console.log("Error Code:", err.code);
+      console.log("Error Message:", err.message);
+      return res.json({ Status: false, Error: err });
+    }
+    console.log("=== Success ===");
+    console.log("Insert Result:", result);
+    return res.json({ Status: true });
+  });
+});
+
+////// Employee Routes /////////
+
+router.get("/employees/all/:userId", (req, res) => {
+  const userId = req.params.userId; 
+  // SQL query to fetch employees linked to the clients that the user has access to
+  const sql = `
+    SELECT e.*, c.name AS client_name 
+    FROM employees e 
+    JOIN clients c ON e.client_id = c.client_id
+    WHERE c.user_id = ?`;
+
+  con.query(sql, [userId], (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.json({ Status: false, Error: "Query Error" });
+    }
+    return res.json({ Status: true, Result: result });
+  });
+});
+
+// Add employee
+router.post("/add_employee/:clientId", (req, res) => {
+  console.log("=== Add Employee Route Start ===");
+  console.log("Client ID from params:", req.params.clientId);
+  console.log("Request body:", JSON.stringify(req.body, null, 2));
+
+  let client_id = req.params.clientId;
+  
+  const sql = `INSERT INTO employees 
+    (client_id, first_name, middle_name, last_name, ssn, street_address, city, state, date_of_birth, hire_date, job_title,
+      i9_date, w4_date, dependents, marital_status, employment_status) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+  const values = [
+    client_id,
+    req.body.first_name,
+    req.body.middle_name,
+    req.body.last_name,
+    req.body.ssn,
+    req.body.street_address,
+    req.body.city,
+    req.body.state,
+    req.body.date_of_birth,
+    req.body.hire_date,
+    req.body.job_title,
+    req.body.i9_date,
+    req.body.w4_date,
+    req.body.dependents,
+    req.body.marital_status,
+    req.body.employment_status,
+  ];
+
+  console.log("SQL Query:", sql);
+  console.log("Values array:", values);
+
+  // There's a potential issue here - [values] creates a nested array
+  // Let's fix that and add more logging
+  con.query(sql, values, (err, result) => {
+    if (err) {
+      console.log("=== Database Error ===");
+      console.log("Error:", err);
+      console.log("Error SQL State:", err.sqlState);
+      console.log("Error Code:", err.code);
+      console.log("Error Message:", err.message);
+      return res.json({ Status: false, Error: err });
+    }
+    console.log("=== Success ===");
+    console.log("Insert Result:", result);
+    return res.json({ Status: true });
+  });
+});
+
+// Get employee by ID
+router.get("/employee/:id", (req, res) => {
+  const id = req.params.id;
+  const sql = "SELECT * FROM employees WHERE employee_id = ?";
+  con.query(sql, [id], (err, result) => {
+    if (err) return res.json({ Status: false, Error: "Query Error" });
+    return res.json({ Status: true, Result: result });
+  });
+});
+
+// Update employee
+router.put("/edit_employee/:id", (req, res) => {
+  let employee_id = req.params.id;
+  const sql = `UPDATE employees 
+               SET first_name = ?, middle_name = ?, last_name = ?, ssn = ?, street_address = ?, 
+               city = ?, state = ?, date_of_birth = ?, hire_date = ?, job_title = ?, i9_date = ?, w4_date = ?,
+               dependents = ?, marital_status = ?, employment_status = ?
+               WHERE employee_id = ?`;
+
+  const values = [
+    req.body.first_name,
+    req.body.middle_name,
+    req.body.last_name,
+    req.body.ssn,
+    req.body.street_address,
+    req.body.city,
+    req.body.state,
+    req.body.date_of_birth,
+    req.body.hire_date,
+    req.body.job_title,
+    req.body.i9_date,
+    req.body.w4_date,
+    req.body.dependents,
+    req.body.marital_status,
+    req.body.employment_status,
+    employee_id
+  ];
+  con.query(sql, values, (err, result) => {
+    if (err) return res.json({ Status: false, Error: "Query Error" + err });
+    return res.json({ Status: true });
+  });
+});
+
+// Delete employee
+router.delete("/delete_employee/:id", (req, res) => {
+const id = req.params.id;
+const sql = "DELETE FROM employees WHERE employee_id = ?";
+con.query(sql, [id], (err, result) => {
+  if (err) return res.json({ Status: false, Error: "Query Error" + err });
+  return res.json({ Status: true });
+});
+});
+
+
+////// Client Routes //////////
+// Get all clients
+router.get("/clients/all/:userId", (req, res) => {
+  const userId = req.params.userId;
+  const sql = "SELECT * FROM clients WHERE user_id = ?";
+  con.query(sql, [userId], (err, result) => {
+    if (err) return res.json({ Status: false, Error: "Query Error" });
+    return res.json({ Status: true, Result: result });
+  });
+});
+
+// Get client by ID
+router.get("/client/:id", (req, res) => {
+const id = req.params.id;
+const sql = "SELECT * FROM clients WHERE client_id = ?";
+con.query(sql, [id], (err, result) => {
+  if (err) return res.json({ Status: false, Error: "Query Error" });
+  return res.json({ Status: true, Result: result });
+});
+});
+
+// add client
+router.post("/add_client/:id", (req, res) => {
+const id = req.params.id;
+const { name, company_name, ein, address, city, entity_corp, state, owner_address, phone_num } = req.body;
+
+const cidSql = "SELECT * FROM clients WHERE user_id = ? ORDER BY CAST(company_id AS UNSIGNED) DESC LIMIT 1;";
+
+con.query(cidSql, [id], (err, result) => {
+  if (err) return res.json({ Status: false, Error: err });
+
+  let largestId = result[0]?.company_id || '000'; // Default to '000' if no rows exist
+  let updateId = String(parseInt(largestId) + 1).padStart(3, '0'); // Increment and pad with leading zeros
+
+  const sql = `INSERT INTO clients 
+  (name, user_id, company_id, company_name, ein, address, city, entity_corp, state, owner_address, phone_num) 
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+  const values = [
+    name,
+    id,
+    updateId,
+    company_name,
+    ein,
+    address,
+    city,
+    entity_corp,
+    state,
+    owner_address,
+    phone_num,
+  ];
+
+  con.query(sql, values, (err, clientResult) => {
+    if (err) return res.json({ Status: false, Error: err });
+
+    return res.json({
+      Status: true,
+      client_id: clientResult.insertId, // Retrieve the auto-incremented client_id
+      message: "Client created successfully!",
+    });
+  });
+});
+});
+
+// Update client
+router.put("/edit_client/:id", (req, res) => {
+  const id = req.params.id;
+  const sql = `UPDATE clients 
+               SET name = ?, company_name = ?, ein = ?, address = ?,
+               city = ?, state = ?, entity_corp = ?, owner_address = ?,
+               phone_num = ? 
+               WHERE client_id = ?`;
+  const values = [
+    req.body.name,
+    req.body.company_name,
+    req.body.ein,
+    req.body.address,
+    req.body.city,
+    req.body.state,
+    req.body.entity_corp,
+    req.body.owner_address,
+    req.body.phone_num
+  ];
+  con.query(sql, [...values, id], (err, result) => {
+    if (err) return res.json({ Status: false, Error: "Query Error" + err });
+    return res.json({ Status: true });
+  });
+});
+
+// delete client
+router.delete("/delete_client/:id", (req, res) => {
+let id = req.params.id
+
+  // First delete employees
+  const deleteEmployees = "DELETE FROM employees WHERE client_id = ?";
+  con.query(deleteEmployees, [id], (err, result) => {
+    if (err) return res.json({ Status: false, Error: "Query Error" + err });
+    
+    // Then delete client
+    const deleteClient = "DELETE FROM clients WHERE client_id = ?";
+    con.query(deleteClient, [id], (err, result) => {
+      if (err) return res.json({ Status: false, Error: "Query Error" + err });
+      return res.json({ Status: true });
+    });
+  });
+});
+
 // Update password route - for existing users
 router.post("/update-password", async (req, res) => {
     try {
@@ -177,210 +483,6 @@ router.post("/register", async (req, res) => {
   router.get("/protected", verifyToken, (req, res) => {
     res.json({ Status: true, user: req.user });
   });
-
-// Image upload configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "Public/Images");
-  },
-  filename: (req, file, cb) => {
-    cb(null, file.fieldname + "_" + Date.now() + path.extname(file.originalname));
-  },
-});
-const upload = multer({ storage: storage });
-
-// Add employee
-router.post("/add_employee", upload.single("image"), (req, res) => {
-  const sql = `INSERT INTO employees 
-    (name, position, salary, client_id, image) 
-    VALUES (?)`;
-  const values = [
-    req.body.name,
-    req.body.position,
-    req.body.salary,
-    req.body.client_id,
-    req.file.filename,
-  ];
-  con.query(sql, [values], (err, result) => {
-    if (err) return res.json({ Status: false, Error: err });
-    return res.json({ Status: true });
-  });
-});
-
-// Get all employees
-// router.get("/employees", (req, res) => {
-//   const sql = `SELECT e.*, c.name AS client_name 
-//                FROM employees e 
-//                JOIN clients c ON e.client_id = c.id`;
-//   con.query(sql, (err, result) => {
-//     if (err) return res.json({ Status: false, Error: "Query Error" });
-//     return res.json({ Status: true, Result: result });
-//   });
-// });
-router.get("/employees/all/:userId", (req, res) => {
-    const userId = req.params.userId; 
-    // SQL query to fetch employees linked to the clients that the user has access to
-    const sql = `
-      SELECT e.*, c.name AS client_name 
-      FROM employees e 
-      JOIN clients c ON e.client_id = c.client_id
-      WHERE c.user_id = ?`;
-  
-    con.query(sql, [userId], (err, result) => {
-      if (err) {
-        console.error(err);
-        return res.json({ Status: false, Error: "Query Error" });
-      }
-      return res.json({ Status: true, Result: result });
-    });
-  });
-  
-
-// Get employee by ID
-router.get("/employees/:id", (req, res) => {
-  const id = req.params.id;
-  const sql = "SELECT * FROM employees WHERE id = ?";
-  con.query(sql, [id], (err, result) => {
-    if (err) return res.json({ Status: false, Error: "Query Error" });
-    return res.json({ Status: true, Result: result });
-  });
-});
-
-// Update employee
-router.put("/edit_employee/:id", (req, res) => {
-  const id = req.params.id;
-  const sql = `UPDATE employees 
-               SET name = ?, position = ?, salary = ?, client_id = ? 
-               WHERE id = ?`;
-  const values = [
-    req.body.name,
-    req.body.position,
-    req.body.salary,
-    req.body.client_id,
-  ];
-  con.query(sql, [...values, id], (err, result) => {
-    if (err) return res.json({ Status: false, Error: "Query Error" + err });
-    return res.json({ Status: true });
-  });
-});
-
-// Delete employee
-router.delete("/delete_employee/:id", (req, res) => {
-  const id = req.params.id;
-  const sql = "DELETE FROM employees WHERE id = ?";
-  con.query(sql, [id], (err, result) => {
-    if (err) return res.json({ Status: false, Error: "Query Error" + err });
-    return res.json({ Status: true });
-  });
-});
-
-// Get all clients
-router.get("/clients/all/:userId", (req, res) => {
-    const userId = req.params.userId;
-    const sql = "SELECT * FROM clients WHERE user_id = ?";
-    con.query(sql, [userId], (err, result) => {
-      if (err) return res.json({ Status: false, Error: "Query Error" });
-      return res.json({ Status: true, Result: result });
-    });
-  });
-
-  // Get client by ID
-router.get("/client/:id", (req, res) => {
-  const id = req.params.id;
-  const sql = "SELECT * FROM clients WHERE client_id = ?";
-  con.query(sql, [id], (err, result) => {
-    if (err) return res.json({ Status: false, Error: "Query Error" });
-    return res.json({ Status: true, Result: result });
-  });
-});
-
-// add client
-router.post("/add_client/:id", (req, res) => {
-  const id = req.params.id;
-  const { name, company_name, ein, address, city, entity_corp, state, owner_address, phone_num } = req.body;
-
-  const cidSql = "SELECT * FROM clients WHERE user_id = ? ORDER BY CAST(company_id AS UNSIGNED) DESC LIMIT 1;";
-
-  con.query(cidSql, [id], (err, result) => {
-    if (err) return res.json({ Status: false, Error: err });
-
-    let largestId = result[0]?.company_id || '000'; // Default to '000' if no rows exist
-    let updateId = String(parseInt(largestId) + 1).padStart(3, '0'); // Increment and pad with leading zeros
-
-    const sql = `INSERT INTO clients 
-    (name, user_id, company_id, company_name, ein, address, city, entity_corp, state, owner_address, phone_num) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-    const values = [
-      name,
-      id,
-      updateId,
-      company_name,
-      ein,
-      address,
-      city,
-      entity_corp,
-      state,
-      owner_address,
-      phone_num,
-    ];
-
-    con.query(sql, values, (err, clientResult) => {
-      if (err) return res.json({ Status: false, Error: err });
-
-      return res.json({
-        Status: true,
-        client_id: clientResult.insertId, // Retrieve the auto-incremented client_id
-        message: "Client created successfully!",
-      });
-    });
-  });
-});
-
-// Update client
-router.put("/edit_client/:id", (req, res) => {
-  console.log('hit edit client route')
-    const id = req.params.id;
-    const sql = `UPDATE clients 
-                 SET name = ?, company_name = ?, ein = ?, address = ?,
-                 city = ?, state = ?, entity_corp = ?, owner_address = ?,
-                 phone_num = ? 
-                 WHERE user_id = ?`;
-    const values = [
-      req.body.name,
-      req.body.company_name,
-      req.body.ein,
-      req.body.address,
-      req.body.city,
-      req.body.state,
-      req.body.entity_corp,
-      req.body.owner_address,
-      req.body.phone_num
-    ];
-    con.query(sql, [...values, id], (err, result) => {
-      if (err) return res.json({ Status: false, Error: "Query Error" + err });
-      console.log({result})
-      return res.json({ Status: true });
-    });
-});
-
-// delete client
-router.delete("/delete_client/:id", (req, res) => {
-  let id = req.params.id
-  
-  // First delete employees
-  const deleteEmployees = "DELETE FROM employees WHERE client_id = ?";
-  con.query(deleteEmployees, [id], (err, result) => {
-    if (err) return res.json({ Status: false, Error: "Query Error" + err });
-    
-    // Then delete client
-    const deleteClient = "DELETE FROM clients WHERE client_id = ?";
-    con.query(deleteClient, [id], (err, result) => {
-      if (err) return res.json({ Status: false, Error: "Query Error" + err });
-      return res.json({ Status: true });
-    });
-  });
-});
 
 // Register
 // Example for hashing password during user registration

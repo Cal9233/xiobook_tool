@@ -15,6 +15,8 @@ import EmployeeDetail from './Components/EmployeeDetail'
 import PrivateRoute from './Components/PrivateRoute'
 import EditClient from './Components/EditClient'
 import AddClient from './Components/AddClient'
+import Calculator from './Components/Calculator'
+import EmployeeForm from './Components/EmployeeForm'
 
 function App() {
   return (
@@ -37,6 +39,8 @@ function App() {
         <Route path='/dashboard/add_category' element={<AddCategory />}></Route>
         <Route path='/dashboard/add_employee' element={<AddEmployee />}></Route>
         <Route path='/dashboard/edit_employee/:id' element={<EditEmployee />}></Route>
+        <Route path='/dashboard/calculator/:id' element={<Calculator />}></Route>
+        <Route path='/dashboard/employeeform/:id' element={<EmployeeForm />}></Route>
       </Route>
     </Routes>
     </BrowserRouter>

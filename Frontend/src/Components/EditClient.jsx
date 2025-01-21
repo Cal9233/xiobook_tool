@@ -33,23 +33,23 @@ const EditClient = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log(id)
     axios
       .get('http://localhost:1337/auth/client/' + id)
       .then((result) => {
-        console.log({result})
-        const data = result.data.Result[0];
-        setClient({
-          name: data.name,
-          company_name: data.company_name,
-          ein: data.ein,
-          address: data.address,
-          entity_corp: data.entity_corp,
-          city: data.city,
-          state: data.state,
-          owner_address: data.owner_address,
-          phone_num: data.phone_num,
-        });
+        if (result.data.Status) {
+          const data = result.data.Result[0];
+          setClient({
+            name: data.name,
+            company_name: data.company_name,
+            ein: data.ein,
+            address: data.address,
+            entity_corp: data.entity_corp,
+            city: data.city,
+            state: data.state,
+            owner_address: data.owner_address,
+            phone_num: data.phone_num,
+          });
+        }
       })
       .catch((err) => console.log(err));
   }, [id]);

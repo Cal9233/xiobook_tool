@@ -48,7 +48,7 @@ const Dashboard = () => {
                   to="/dashboard/clients"
                   className="nav-link px-0 align-middle text-white"
                 >
-                  <i className="fs-4 bi-people ms-2"></i>
+                  <i className="fs-4 bi bi-person ms-2"></i>
                   <span className="ms-2 d-none d-sm-inline">
                     Manage Clients
                   </span>

@@ -47,3 +47,22 @@ ADD COLUMN phone_num VARCHAR(15) DEFAULT NULL;
 
 ALTER TABLE clients
 ADD COLUMN employee_count INT(0) DEFAULT NULL;
+
+CREATE TABLE employee_info (
+    id INT AUTO_INCREMENT PRIMARY KEY, -- A unique identifier for each row
+    date DATE NOT NULL,                -- The date
+    check_number INT,                  -- Check number (Ck#)
+    gross_wages_per_week DECIMAL(10, 2), -- Gross wages per week
+    fed_income_tax_wh DECIMAL(10, 2),  -- Federal income tax withholding
+    soc_sec DECIMAL(10, 2),     -- Social Security tax withholding (6.2%)
+    medicare DECIMAL(10, 2),      -- Medicare tax (1.45%)
+    futa_annual_er DECIMAL(10, 2),     -- FUTA annual employer tax
+    ca_pit_wh DECIMAL(10, 2),          -- California PIT withholding
+    sdi DECIMAL(10, 2),                -- SDI: 1.10%
+    sui DECIMAL(10, 2),                -- SUI: 2.60%
+    ett DECIMAL(10, 2),                -- ETT: 0.10%
+    net_wages DECIMAL(10, 2)           -- Net wages
+);
+
+ALTER TABLE employee_info
+ADD COLUMN employee_id INT AFTER id;
