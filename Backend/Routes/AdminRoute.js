@@ -30,7 +30,7 @@ router.get("/employee_info/:id", (req, res) => {
 });
 
 /////// Add employee_info ////////
-// Add employee
+// Add employee info
 router.post("/add_employee_info/:employeeId", (req, res) => {
   console.log("=== Add Employee Info Route Start ===");
   console.log("Employee ID from params:", req.params.employeeId);
@@ -38,26 +38,26 @@ router.post("/add_employee_info/:employeeId", (req, res) => {
 
   let employee_id = req.params.employeeId;
   
-  const sql = `INSERT INTO employees 
+  const sql = `INSERT INTO employee_info 
     (employee_id, date, check_number, gross_wages_per_week, fed_income_tax_wh, soc_sec, medicare, futa_annual_er, 
     ca_pit_wh, sdi, sui, ett, net_wages) 
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-  const values = [
-    employee_id,
-    req.body.date,
-    req.body.check_number,
-    req.body.gross_wages_per_week,
-    req.body.fed_income_tax_wh,
-    req.body.soc_sec,
-    req.body.medicare,
-    req.body.futa_annual_er,
-    req.body.ca_pit_wh,
-    req.body.sdi,
-    req.body.sui,
-    req.body.ett,
-    req.body.net_wages
-  ];
+    const values = [
+      employee_id,
+      req.body.date,
+      req.body.check_number,
+      req.body.gross_wages_per_week,
+      req.body.fed_income_tax_wh,
+      req.body.soc_sec,        // Changed from soc_sec_6_2_wh
+      req.body.medicare,       // Changed from medicare_1_45
+      req.body.futa_annual_er,
+      req.body.ca_pit_wh,
+      req.body.sdi,
+      req.body.sui,
+      req.body.ett,
+      req.body.net_wages      // Changed from net_wage
+    ];
 
   console.log("SQL Query:", sql);
   console.log("Values array:", values);

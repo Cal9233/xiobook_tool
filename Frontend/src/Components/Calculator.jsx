@@ -1,48 +1,88 @@
-import React, { useState } from 'react';
-import EmployeeDataForm from './EmployeeForm';
+import React from 'react';
+import { useLocation } from 'react-router-dom';
 
 const Calculator = () => {
-  const [results, setResults] = useState(null);
+  const location = useLocation();
+  const employeeInfo = location.state?.employeeInfo;
 
-  const calculate = (data) => {
-    const {
-      gross_wages_per_week,
-      fed_income_tax_wh,
-      ca_pit_wh,
-    } = data;
+  if (!employeeInfo) {
+    return <div>No employee information available</div>;
+  }
 
-    const soc_sec_6_2_wh = gross_wages_per_week * 0.062;
-    const medicare_1_45 = gross_wages_per_week * 0.0145;
-    const sdi = gross_wages_per_week * 0.011;
-    const net_wage =
-      gross_wages_per_week -
-      fed_income_tax_wh -
-      soc_sec_6_2_wh -
-      medicare_1_45 -
-      ca_pit_wh -
-      sdi;
+  // Function to format currency values
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(value);
+  };
 
-    setResults({
-      soc_sec_6_2_wh,
-      medicare_1_45,
-      sdi,
-      net_wage,
-    });
+  // Function to format percentages
+  const formatPercent = (value) => {
+    return `${value.toFixed(2)}%`;
   };
 
   return (
-    <div>
-      <h1>Employee Wage Calculator</h1>
-      <EmployeeDataForm onSubmit={calculate} />
-      {results && (
-        <div>
-          <h2>Results:</h2>
-          <p>Social Security (6.2%): ${results.soc_sec_6_2_wh.toFixed(2)}</p>
-          <p>Medicare (1.45%): ${results.medicare_1_45.toFixed(2)}</p>
-          <p>SDI (1.10%): ${results.sdi.toFixed(2)}</p>
-          <p>Net Wage: ${results.net_wage.toFixed(2)}</p>
+    <div className="container mt-4">
+      <h1 className="mb-4">Employee Wage Calculator</h1>
+      <div className="card">
+        <div className="card-header">
+          <h5 className="mb-0">Pay Period: {new Date(employeeInfo.date).toLocaleDateString()}</h5>
+          <h6 className="mb-0">Check Number: {employeeInfo.check_number}</h6>
         </div>
-      )}
+        <div className="card-body">
+          <table className="table table-striped">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th className="text-end">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Gross Wages (Weekly)</td>
+                <td className="text-end">{formatCurrency(employeeInfo.gross_wages_per_week)}</td>
+              </tr>
+              <tr>
+                <td>Federal Income Tax Withholding</td>
+                <td className="text-end">{formatCurrency(employeeInfo.fed_income_tax_wh)}</td>
+              </tr>
+              <tr>
+                <td>California PIT Withholding</td>
+                <td className="text-end">{formatCurrency(employeeInfo.ca_pit_wh)}</td>
+              </tr>
+              <tr>
+                <td>Social Security (6.2%)</td>
+                <td className="text-end">{formatCurrency(employeeInfo.soc_sec)}</td>
+              </tr>
+              <tr>
+                <td>Medicare (1.45%)</td>
+                <td className="text-end">{formatCurrency(employeeInfo.medicare)}</td>
+              </tr>
+              <tr>
+                <td>State Disability Insurance (SDI)</td>
+                <td className="text-end">{formatCurrency(employeeInfo.sdi)}</td>
+              </tr>
+              <tr>
+                <td>State Unemployment Insurance (SUI)</td>
+                <td className="text-end">{formatCurrency(employeeInfo.sui)}</td>
+              </tr>
+              <tr>
+                <td>Employment Training Tax (ETT)</td>
+                <td className="text-end">{formatCurrency(employeeInfo.ett)}</td>
+              </tr>
+              <tr>
+                <td>Federal Unemployment Tax (FUTA)</td>
+                <td className="text-end">{formatCurrency(employeeInfo.futa_annual_er)}</td>
+              </tr>
+              <tr className="table-primary">
+                <th>Net Wages</th>
+                <td className="text-end fw-bold">{formatCurrency(employeeInfo.net_wages)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };

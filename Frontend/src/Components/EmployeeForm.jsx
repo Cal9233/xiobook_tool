@@ -1,20 +1,76 @@
 import React, { useState } from "react";
+import axios from 'axios';
+import { useNavigate, useParams } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const EmployeeForm = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
+    date: new Date(),
     gross_wages_per_week: "",
     fed_income_tax_wh: "",
     ca_pit_wh: "",
   });
-
+  let {employeeId} = useParams()
+  let navigate = useNavigate()
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: parseFloat(value) || "" });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    try {
+      // Calculate the values first
+      const soc_sec = (formData.gross_wages_per_week * 0.062) >= 168600 ? 0 : (formData.gross_wages_per_week * 0.062);
+      const medicare = formData.gross_wages_per_week * 0.0145;
+      const sdi = formData.gross_wages_per_week * 0.011;
+      const net_wages = formData.gross_wages_per_week - 
+                      formData.fed_income_tax_wh - 
+                      soc_sec - 
+                      medicare - 
+                      formData.ca_pit_wh - 
+                      sdi;
+      const futa_annual_er = formData.gross_wages_per_week * 0.006;
+      const sui = formData.gross_wages_per_week * 0.026;
+      const ett = formData.gross_wages_per_week * 0.01;
+      const check_number = employeeId;
+      const formattedDate = new Date(formData.date).toISOString().split('T')[0];
+  
+      // Create the complete data object
+      const completeFormData = {
+        ...formData,
+        date: formattedDate, 
+        check_number,
+        sdi,
+        sui,
+        ett,
+        futa_annual_er,
+        soc_sec,
+        medicare,
+        net_wages
+      };
+  
+      // Send the complete data in the POST request
+      const result = await axios.post(
+        `http://localhost:1337/auth/add_employee_info/${employeeId}`, 
+        completeFormData
+      );
+      
+      if (result.data.Status === true) {
+        toast.success('Employee added successfully!');
+        // Navigate to Calculator with the complete data
+        navigate(`/dashboard/calculator/${employeeId}`, {
+          state: { employeeInfo: completeFormData }
+        });
+      } else {
+        toast.error(result.data.Error || 'An unknown error occurred!');
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      toast.error('Something went wrong!');
+    }
   };
 
   return (
@@ -77,6 +133,7 @@ const EmployeeForm = ({ onSubmit }) => {
           </div>
         </form>
       </div>
+      <ToastContainer />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -8,6 +8,7 @@ const EmployeeList = () => {
   const [groupedEmployees, setGroupedEmployees] = useState({});
   const user = JSON.parse(localStorage.getItem('user'));
   const userId = user.id;
+  let navigate = useNavigate()
 
   useEffect(() => {
     fetchData();
@@ -77,14 +78,14 @@ const EmployeeList = () => {
   const handleEmployeePayments = async (employeeId) => {
     try {
       const response = await axios.get(`http://localhost:1337/auth/employee_info/${employeeId}`);
-      console.log(response)
-      // Check if employee_info data exists for this employee
+      
       if (response.data.Status && response.data.Result) {
-        // Redirect to Calculator
-        window.location.href = `/dashboard/calculator/${employeeId}`;
+        // Use React Router navigation instead of window.location
+        navigate(`/dashboard/calculator/${employeeId}`, {
+          state: { employeeInfo: response.data.Result }
+        });
       } else {
-        // Redirect to EmployeeForm
-        window.location.href = `/dashboard/employeeform/${employeeId}`;
+        navigate(`/dashboard/employeeform/${employeeId}`);
       }
     } catch (error) {
       console.error("Error checking employee info:", error);
