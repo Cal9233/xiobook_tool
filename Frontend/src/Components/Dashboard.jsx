@@ -57,14 +57,21 @@ const Dashboard = () => {
               <li className="w-100">
                 <Link
                   to="/dashboard/employee"
-                  className="nav-link px-0 align-middle text-white"
+                  className="nav-link px-0 align-middle text-white d-flex align-items-center"
                 >
                   <i className="fs-4 bi-people ms-2"></i>
-                  <span className="ms-2 d-none d-sm-inline">
-                    Manage Employees
-                  </span>
+                  <span className="ms-2 d-none d-sm-inline">Manage Employees</span>
                 </Link>
-              </li>
+                </li>
+                <li className="w-100">
+                  <Link
+                    to="/dashboard/reports"
+                    className="nav-link px-0 align-middle text-white d-flex align-items-center"
+                  >
+                  <i className="fs-4 bi bi-journals ms-2"></i>
+                  <span className="ms-2 d-none d-sm-inline">Reports</span>
+                </Link>
+                </li>
               <li className="w-100" onClick={handleLogout}>
               <Link
                   className="nav-link px-0 align-middle text-white"

@@ -7,6 +7,95 @@ const path = require("path");
 const router = express.Router();
 
 
+/////// Reports Info Routes ///////
+
+// Get all Clients and Employees
+router.get('/reports/all/:userId', (req, res) => {
+  const userId = req.params.userId;
+  
+  const sql = `
+    SELECT 
+      c.client_id, 
+      c.name AS client_name, 
+      c.company_name,
+      e.employee_id, 
+      e.first_name, 
+      e.last_name, 
+      e.job_title,
+      ei.*
+    FROM 
+      clients c
+    LEFT JOIN 
+      employees e ON c.client_id = e.client_id
+    LEFT JOIN 
+      employee_info ei ON e.employee_id = ei.employee_id
+    WHERE 
+      c.user_id = ?
+    ORDER BY 
+      c.client_id, 
+      e.employee_id, 
+      ei.date`;
+
+  con.query(sql, [userId], (err, results) => {
+    if (err) {
+      console.error('Database query error:', err);
+      return res.status(500).json({ Status: false, Error: err.message });
+    }
+
+    const clientMap = new Map();
+
+    results.forEach(row => {
+      if (!clientMap.has(row.client_id)) {
+        clientMap.set(row.client_id, {
+          client_id: row.client_id,
+          client_name: row.client_name,
+          company_name: row.company_name,
+          employee_list: []
+        });
+      }
+
+      if (row.employee_id) {
+        let employee = clientMap.get(row.client_id).employee_list
+          .find(emp => emp.employee_id === row.employee_id);
+
+        const employeeInfo = {
+          id: row.id,
+          date: row.date,
+          check_number: row.check_number,
+          gross_wages_per_week: row.gross_wages_per_week,
+          fed_income_tax_wh: row.fed_income_tax_wh,
+          soc_sec: row.soc_sec,
+          medicare: row.medicare,
+          futa_annual_er: row.futa_annual_er,
+          ca_pit_wh: row.ca_pit_wh,
+          sdi: row.sdi,
+          sui: row.sui,
+          ett: row.ett,
+          net_wages: row.net_wages
+        };
+
+        if (!employee) {
+          employee = {
+            employee_id: row.employee_id,
+            first_name: row.first_name,
+            last_name: row.last_name,
+            job_title: row.job_title,
+            employee_info: []
+          };
+          clientMap.get(row.client_id).employee_list.push(employee);
+        }
+        
+        employee.employee_info.push(employeeInfo);
+      }
+    });
+
+    return res.json({ 
+      Status: true, 
+      data: Array.from(clientMap.values())
+    });
+  });
+});
+
 ////// Employee_Info Routes ////////
 
 // Get employee_info by ID
@@ -18,7 +107,6 @@ router.get("/employee_info/:id", (req, res) => {
       console.error("Query error:", err);
       return res.json({ Status: false, Error: "Query Error" });
     }
-
     if (result.length > 0) {
       // Data exists
       return res.json({ Status: true, Result: result });
@@ -49,14 +137,14 @@ router.post("/add_employee_info/:employeeId", (req, res) => {
       req.body.check_number,
       req.body.gross_wages_per_week,
       req.body.fed_income_tax_wh,
-      req.body.soc_sec,        // Changed from soc_sec_6_2_wh
-      req.body.medicare,       // Changed from medicare_1_45
+      req.body.soc_sec,
+      req.body.medicare,
       req.body.futa_annual_er,
       req.body.ca_pit_wh,
       req.body.sdi,
       req.body.sui,
       req.body.ett,
-      req.body.net_wages      // Changed from net_wage
+      req.body.net_wages
     ];
 
   console.log("SQL Query:", sql);
