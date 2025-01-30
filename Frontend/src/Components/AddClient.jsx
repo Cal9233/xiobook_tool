@@ -18,13 +18,14 @@ const AddClient = () => {
   });
   const user = JSON.parse(localStorage.getItem('user'))
   let userId = user.id
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const server_URI = process.env.REACT_APP_API_URL;
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Submitting form with data: ", client); // Debugging log
     axios
-      .post(`http://localhost:1337/auth/add_client/${userId}`, client)
+      .post(`${server_URI}auth/add_client/${userId}`, client)
       .then(result => {
           console.log("API Response: ", result); // Log the result to check the response structure
           

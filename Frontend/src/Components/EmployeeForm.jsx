@@ -52,9 +52,12 @@ const EmployeeForm = ({ onSubmit }) => {
         net_wages
       };
   
+      
+    const server_URI = process.env.REACT_APP_API_URL;
+
       // Send the complete data in the POST request
       const result = await axios.post(
-        `http://localhost:1337/auth/add_employee_info/${employeeId}`, 
+        `${server_URI}auth/add_employee_info/${employeeId}`, 
         completeFormData
       );
       

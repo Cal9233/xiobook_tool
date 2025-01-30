@@ -4,7 +4,6 @@ import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
 const Login = () => {
-
     const [values, setValues] = useState({
         email: '',
         password: ''
@@ -12,11 +11,12 @@ const Login = () => {
     const [error, setError] = useState(null)
     const navigate = useNavigate()
     axios.defaults.withCredentials = true;
+    
+    const server_URI = process.env.REACT_APP_API_URL;
     const handleSubmit = (event) => {
         event.preventDefault()
-        axios.post('http://localhost:1337/auth/adminlogin', values)
+        axios.post(`${server_URI}auth/adminlogin`, values)
         .then(result => {
-            console.log(result)
             if(result.data.loginStatus) {
                 localStorage.setItem("valid", true)
                 localStorage.setItem("user", JSON.stringify(result.data.user))

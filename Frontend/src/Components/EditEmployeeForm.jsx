@@ -38,6 +38,7 @@ const EditEmployeeForm = () => {
     let navigate = useNavigate();
     let id = employeeId !== undefined ? employeeId : employeeData.id;
 
+    const server_URI = process.env.REACT_APP_API_URL;
     useEffect(() => {
         // If we have data from navigation state, use it
         if (employeeData) {
@@ -59,7 +60,7 @@ const EditEmployeeForm = () => {
             // Fallback to API call if no data was passed
             console.log('No passed data, fetching from API');
             axios
-            .get('http://localhost:1337/auth/employee_info/' + id)
+            .get(`${server_URI}auth/employee_info/` + id)
             .then((result) => {
                 console.log('API Response:', result.data);
                 if(result.data.Status){
@@ -100,7 +101,7 @@ const EditEmployeeForm = () => {
         try {
             console.log('Submitting form data:', formData); // Added console log
             const result = await axios.put(
-                `http://localhost:1337/auth/employee_info/${id}`, 
+                `${server_URI}auth/employee_info/${id}`, 
                 formData
             );
             console.log('Submit response:', result.data); // Added console log

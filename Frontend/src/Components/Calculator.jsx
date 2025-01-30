@@ -11,6 +11,7 @@ const Calculator = () => {
   const [showERTaxesByPeriod, setShowERTaxesByPeriod] = useState({});
   const [employeeData, setEmployeeData] = useState(location.state?.employeeInfo || null);
   
+  const server_URI = process.env.REACT_APP_API_URL;
   if (!employeeData) {
     return <div>No employee information available</div>;
   }
@@ -42,7 +43,7 @@ const Calculator = () => {
   const handleDelete = async (id, clientName) => {
     if (window.confirm(`Are you sure you want to delete ${clientName}? This will also delete all associated employees.`)) {
       try {
-        const result = await axios.delete(`http://localhost:1337/auth/employee_info/${id}`);
+        const result = await axios.delete(`${server_URI}auth/employee_info/${id}`);
         if (result.data.Status) {
           // Update the state to remove the deleted item
           setEmployeeData(prevData => prevData.filter(item => item.id !== id));

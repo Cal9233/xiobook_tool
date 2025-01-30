@@ -32,9 +32,10 @@ const EditClient = () => {
 
   const navigate = useNavigate();
 
+  const server_URI = process.env.REACT_APP_API_URL;
   useEffect(() => {
     axios
-      .get('http://localhost:1337/auth/client/' + id)
+      .get(`${server_URI}auth/client/` + id)
       .then((result) => {
         if (result.data.Status) {
           const data = result.data.Result[0];
@@ -57,7 +58,7 @@ const EditClient = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     axios
-      .put('http://localhost:1337/auth/edit_client/' + id, client)
+      .put(`${server_URI}auth/edit_client/` + id, client)
       .then((result) => {
         if (result.data.Status !== false) {
           toast.success('Client updated successfully!');

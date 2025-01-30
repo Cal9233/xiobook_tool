@@ -44,6 +44,7 @@ const EditEmployee = () => {
 
     const navigate = useNavigate()
 
+    const server_URI = process.env.REACT_APP_API_URL;
     useEffect(() => {
       const formatDate = (dateString) => {
         if (!dateString) return "";
@@ -54,7 +55,7 @@ const EditEmployee = () => {
         return `${year}-${month}-${day}`;
       };
 
-        axios.get(`http://localhost:1337/auth/employee/${id}`)
+        axios.get(`${server_URI}auth/employee/${id}`)
             .then(result => {
                 if (result.data.Status) {
                   let data = result.data.Result[0];
@@ -82,7 +83,7 @@ const EditEmployee = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.put(`http://localhost:1337/auth/edit_employee/${id}`, employee)
+        axios.put(`${server_URI}auth/edit_employee/${id}`, employee)
             .then(result => {
                 if (result.data.Status) {
                   toast.success('Client updated successfully!');

@@ -27,12 +27,13 @@ const AddEmployee = () => {
   const location = useLocation();
   const clientId = location.state?.clientId;
   const navigate = useNavigate()
+  const server_URI = process.env.REACT_APP_API_URL;
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Submitting form with data: ", employee); // Debugging log
     axios
-      .post(`http://localhost:1337/auth/add_employee/${clientId}`, employee)
+      .post(`${server_URI}auth/add_employee/${clientId}`, employee)
       .then(result => {
           console.log("API Response: ", result); // Log the result to check the response structure
           

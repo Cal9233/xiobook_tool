@@ -6,8 +6,10 @@ import axios from "axios";
 const Dashboard = () => {
   const navigate = useNavigate()
   axios.defaults.withCredentials = true
+  const server_URI = process.env.REACT_APP_API_URL
+
   const handleLogout = () => {
-    axios.get('http://localhost:1337/auth/logout')
+    axios.get(`${server_URI}auth/logout`)
     .then(result => {
       if(result.data.Status) { 
         localStorage.removeItem("valid")

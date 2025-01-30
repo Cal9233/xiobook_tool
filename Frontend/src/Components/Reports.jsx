@@ -8,13 +8,14 @@ const Reports = () => {
     const [selectedClient, setSelectedClient] = useState(null);
     const [employeeSummary, setEmployeeSummary] = useState([]);
     const [summaryType, setSummaryType] = useState('monthly');
+    const server_URI = process.env.REACT_APP_API_URL;
 
     const user = JSON.parse(localStorage.getItem('user'));
     const userId = user.id;
 
     useEffect(() => {
         axios
-          .get(`http://localhost:1337/auth/reports/all/${userId}`)
+          .get(`${server_URI}auth/reports/all/${userId}`)
           .then((result) => {
             if (result.data.Status) {
               setClient(result.data.data);
@@ -33,6 +34,7 @@ const Reports = () => {
         setSelectedClient(selectedClientData);
         setEmployeeSummary(aggregatedSummary);
     };
+
     const aggregateEmployeeData = (employees, type) => {
         const periodGroups = {};
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -109,6 +111,7 @@ const Reports = () => {
      
         return [...summaryArray, totalRow];
     };
+    
     return (
         <div className="px-5 mt-3">
             <div className="d-flex justify-content-center">

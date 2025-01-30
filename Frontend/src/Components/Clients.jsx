@@ -8,11 +8,12 @@ const Client = () => {
   const [client, setClient] = useState([]);
   const navigate = useNavigate()
   const user = JSON.parse(localStorage.getItem('user'))
-  let userId = user.id
+  let userId = user.id;
+  const server_URI = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     axios
-      .get(`http://localhost:1337/auth/clients/all/${userId}`)
+      .get(`${server_URI}auth/clients/all/${userId}`)
       .then((result) => {
         if (result.data.Status) {
           setClient(result.data.Result);
@@ -25,7 +26,7 @@ const Client = () => {
 
   const handleDelete = (id, clientName) => {
     if (window.confirm(`Are you sure you want to delete ${clientName}? This will also delete all associated employees.`)) {
-      axios.delete('http://localhost:1337/auth/delete_client/'+id)
+      axios.delete(`${server_URI}auth/delete_client/`+id)
       .then(result => {
           if(result.data.Status) {
               // Update the client list without reloading the page

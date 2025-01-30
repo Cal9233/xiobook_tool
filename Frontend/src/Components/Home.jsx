@@ -13,10 +13,12 @@ const Home = () => {
     AdminRecords();
   }, [])
 
+  const server_URI = process.env.REACT_APP_API_URL;
+
   const AdminRecords = () => {
     let user = JSON.parse(localStorage.getItem('user'))
     let userId = user.id
-    axios.get(`http://localhost:1337/auth/clients/all/${userId}`)
+    axios.get(`${server_URI}auth/clients/all/${userId}`)
     .then(result => {
       if(result.data.Status) {
         setAdmins(result.data.Result)
@@ -29,7 +31,7 @@ const Home = () => {
 const employeeCount = () => {
   let user = JSON.parse(localStorage.getItem('user'))
   let userId = user.id
-  axios.get(`http://localhost:1337/auth/employees/all/${userId}`)
+  axios.get(`${server_URI}auth/employees/all/${userId}`)
   .then((result) => {
     if(result.data.Status){
       setEmployeeTotal(result.data.Result.length)

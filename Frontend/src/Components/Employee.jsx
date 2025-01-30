@@ -14,11 +14,13 @@ const EmployeeList = () => {
     fetchData();
   }, [userId]);
 
+  const server_URI = process.env.REACT_APP_API_URL;
+
   // Move fetchData outside useEffect so we can reuse it if needed
   const fetchData = async () => {
     try {
-      const employeesResponse = await axios.get(`http://localhost:1337/auth/employees/all/${userId}`);
-      const clientsResponse = await axios.get(`http://localhost:1337/auth/clients/all/${userId}`);
+      const employeesResponse = await axios.get(`${server_URI}auth/employees/all/${userId}`);
+      const clientsResponse = await axios.get(`${server_URI}auth/clients/all/${userId}`);
       
       if (employeesResponse.data.Status && clientsResponse.data.Status) {
         const initialGroups = {};
@@ -49,7 +51,7 @@ const EmployeeList = () => {
   const handleDelete = async (id, employeeName) => {
     try {
       if (window.confirm(`Are you sure you want to delete ${employeeName}?`)) {
-        const result = await axios.delete(`http://localhost:1337/auth/delete_employee/${id}`);
+        const result = await axios.delete(`${server_URI}auth/delete_employee/${id}`);
         
         if (result.data.Status) {
           // Create new object with the employee removed
@@ -77,7 +79,7 @@ const EmployeeList = () => {
 
   const handleEmployeePayments = async (employeeId) => {
     try {
-      const response = await axios.get(`http://localhost:1337/auth/employee_info/${employeeId}`);
+      const response = await axios.get(`${server_URI}auth/employee_info/${employeeId}`);
       
       if (response.data.Status && response.data.Result) {
         // Use React Router navigation instead of window.location
