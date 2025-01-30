@@ -25,7 +25,7 @@ const EmployeeForm = ({ onSubmit }) => {
       // Calculate the values first
       const soc_sec = (formData.gross_wages_per_week * 0.062) >= 168600 ? 0 : (formData.gross_wages_per_week * 0.062);
       const medicare = formData.gross_wages_per_week * 0.0145;
-      const sdi = formData.gross_wages_per_week * 0.012;
+      const sdi = formData.gross_wages_per_week * 0.012; // Update to new california laws
       const net_wages = formData.gross_wages_per_week - 
                       formData.fed_income_tax_wh - 
                       soc_sec - 

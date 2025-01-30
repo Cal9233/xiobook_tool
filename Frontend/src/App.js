@@ -18,6 +18,7 @@ import AddClient from './Components/AddClient'
 import Calculator from './Components/Calculator'
 import EmployeeForm from './Components/EmployeeForm'
 import Reports from './Components/Reports'
+import EditEmployeeForm from './Components/EditEmployeeForm';
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
         <Route path='/dashboard/calculator/:employeeId' element={<Calculator />}></Route>
         <Route path='/dashboard/employeeform/:employeeId' element={<EmployeeForm />}></Route>
         <Route path='/dashboard/reports' element={<Reports />}></Route>
+        <Route path='/dashboard/edit_employeeform/:id' element={<EditEmployeeForm />}></Route>
       </Route>
     </Routes>
     </BrowserRouter>

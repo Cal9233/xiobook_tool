@@ -1,32 +1,36 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import axios from 'axios';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Calculator = () => {
   const location = useLocation();
   const [expandedPeriod, setExpandedPeriod] = useState(null);
   const [showERTaxesByPeriod, setShowERTaxesByPeriod] = useState({});
-  const employeeInfo = location.state?.employeeInfo || null;
+  const [employeeData, setEmployeeData] = useState(location.state?.employeeInfo || null);
   
-  if (!employeeInfo) {
+  if (!employeeData) {
     return <div>No employee information available</div>;
   }
   
-  // Wrap employeeInfo in an array for mapping
-  const payPeriods = employeeInfo;
+  // Wrap employeeData in an array for mapping
+  const payPeriods = employeeData;
 
   if (payPeriods.length === 0) {
     return <div>No employee information available</div>;
   }
 
-// Function to format currency values
-const formatCurrency = (value) => {
-  const numericValue = parseFloat(value);
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(numericValue || 0);
-};
+  // Function to format currency values
+  const formatCurrency = (value) => {
+    const numericValue = parseFloat(value);
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(numericValue || 0);
+  };
+
   // Toggle ER taxes for a specific pay period
   const toggleERTaxes = (index) => {
     setShowERTaxesByPeriod(prev => ({
@@ -35,10 +39,27 @@ const formatCurrency = (value) => {
     }));
   };
 
+  const handleDelete = async (id, clientName) => {
+    if (window.confirm(`Are you sure you want to delete ${clientName}? This will also delete all associated employees.`)) {
+      try {
+        const result = await axios.delete(`http://localhost:1337/auth/employee_info/${id}`);
+        if (result.data.Status) {
+          // Update the state to remove the deleted item
+          setEmployeeData(prevData => prevData.filter(item => item.id !== id));
+          toast.success('Employee info successfully deleted!');
+        } else {
+          toast.error(result.data.Error);
+        }
+      } catch (error) {
+        toast.error('An error occurred while deleting the client');
+      }
+    }
+  };
+
   return (
     <div className="container mt-4">
       <h1 className="mb-4">Employee Wage Calculator</h1>
-      {payPeriods.map((employeeInfo, index) => {
+      {payPeriods && payPeriods.length > 0 && payPeriods?.map((employeeInfo, index) => {
         // Employer-related taxes rows
         const erTaxRows = [
           {
@@ -56,7 +77,7 @@ const formatCurrency = (value) => {
         ];
 
         return (
-          <div key={index} className="card mb-3">
+          <div key={employeeInfo.id || index} className="card mb-3">
             <div 
               className="card-header d-flex justify-content-between align-items-center"
               onClick={() => setExpandedPeriod(expandedPeriod === index ? null : index)}
@@ -69,6 +90,23 @@ const formatCurrency = (value) => {
                 <h6 className="mb-0">Check Number: {employeeInfo.check_number}</h6>
               </div>
               <div className="d-flex align-items-center">
+                {console.log(employeeInfo)}
+                <Link
+                  to={`/dashboard/edit_employeeform/${employeeInfo.id}`}
+                  state={{ employeeData: employeeInfo }}
+                  className="btn btn-info btn-sm me-2"
+                > 
+                  Edit
+                </Link>                
+                <button 
+                  className='btn btn-warning me-2 btn-primary'
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(employeeInfo.id, employeeInfo.id);
+                  }}
+                >
+                  Delete
+                </button>
                 <button 
                   className={`btn btn-sm me-2 ${showERTaxesByPeriod[index] ? 'btn-primary' : 'btn-outline-primary'}`}
                   onClick={(e) => {
@@ -135,6 +173,7 @@ const formatCurrency = (value) => {
           </div>
         );
       })}
+      <ToastContainer />
     </div>
   );
 };

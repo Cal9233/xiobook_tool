@@ -149,6 +149,12 @@ const EmployeeList = () => {
                             >
                               Employee Payments
                             </button>
+                            <Link
+                              to={`/dashboard/employeeform/${employee.employee_id}`}
+                              className="btn btn btn-sm"
+                            >
+                              Add Wages
+                            </Link>
                           </div>
                         </td>
 

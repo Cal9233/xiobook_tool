@@ -167,6 +167,65 @@ router.post("/add_employee_info/:employeeId", (req, res) => {
   });
 });
 
+// Update employee
+router.put("/employee_info/:employeeId", (req, res) => {
+  console.log("=== UPDATE Employee Info Route Start ===");
+  console.log("Employee ID from params:", req.params.employeeId);
+  console.log("Request body:", JSON.stringify(req.body, null, 2));
+  let employee_id = req.params.employeeId;
+  const sql = `UPDATE employee_info 
+               SET checking_number = ?, date = ?, gross_wages_per_week = ?, fed_income_tax_wh = ?, soc_sec = ?, medicare = ?, 
+               futa_annual_er = ?, ca_pit_wh = ?, sdi = ?, sui = ?, ett = ?, net_wages = ?
+               WHERE id = ?`;
+
+  const dateObj = new Date(req.body.date);
+  const formattedDate = dateObj.toISOString().split('T')[0];
+               
+
+  const values = [
+    employee_id,
+    formattedDate,
+    req.body.gross_wages_per_week,
+    req.body.fed_income_tax_wh,
+    req.body.soc_sec,
+    req.body.medicare,
+    req.body.futa_annual_er,
+    req.body.ca_pit_wh,
+    req.body.sdi,
+    req.body.sui,
+    req.body.ett,
+    req.body.net_wages,
+    employee_id
+  ];
+
+  console.log("SQL Query:", sql);
+  console.log("Values array:", values);
+  con.query(sql, values, (err, result) => {
+    if (err) {
+      console.log("=== Database Error ===");
+      console.log("Error:", err);
+      console.log("Error SQL State:", err.sqlState);
+      console.log("Error Code:", err.code);
+      console.log("Error Message:", err.message);
+      return res.json({ Status: false, Error: "Query Error" + err });
+    }
+    console.log("=== Success ===");
+    console.log("Insert Result:", result);
+    return res.json({ Status: true });
+  });
+});
+
+// Delete employee
+router.delete("/employee_info/:id", (req, res) => {
+  const id = req.params.id;
+  const sql = "DELETE FROM employee_info WHERE id = ?";
+  con.query(sql, [id], (err, result) => {
+    if (err) return res.json({ Status: false, Error: "Query Error" + err });
+    return res.json({ Status: true });
+  });
+});
+
+
 ////// Employee Routes /////////
 
 router.get("/employees/all/:userId", (req, res) => {
@@ -284,12 +343,12 @@ router.put("/edit_employee/:id", (req, res) => {
 
 // Delete employee
 router.delete("/delete_employee/:id", (req, res) => {
-const id = req.params.id;
-const sql = "DELETE FROM employees WHERE employee_id = ?";
-con.query(sql, [id], (err, result) => {
-  if (err) return res.json({ Status: false, Error: "Query Error" + err });
-  return res.json({ Status: true });
-});
+  const id = req.params.id;
+  const sql = "DELETE FROM employees WHERE employee_id = ?";
+  con.query(sql, [id], (err, result) => {
+    if (err) return res.json({ Status: false, Error: "Query Error" + err });
+    return res.json({ Status: true });
+  });
 });
 
 
@@ -427,14 +486,14 @@ router.post("/update-password", async (req, res) => {
   // Registration route - for new users
 router.post("/register", async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, password, role } = req.body;
       
       // Hash the password before storing
       const hashedPassword = await bcrypt.hash(password, 10);
       
-      const sql = "INSERT INTO users (email, password) VALUES (?, ?)";
+      const sql = "INSERT INTO users (email, password, roleid) VALUES (?, ?, ?)";
       
-      con.query(sql, [email, hashedPassword], (err, result) => {
+      con.query(sql, [email, hashedPassword, role], (err, result) => {
         if (err) {
           console.error("Registration error:", err);
           return res.json({ Status: false, Error: "Registration failed" });
@@ -562,7 +621,7 @@ router.post("/register", async (req, res) => {
   };
   
   // Logout route
-  router.post("/logout", (req, res) => {
+  router.get("/logout", (req, res) => {
     res.clearCookie("token");
     return res.json({ Status: true, message: "Logged out successfully" });
   });
@@ -571,27 +630,5 @@ router.post("/register", async (req, res) => {
   router.get("/protected", verifyToken, (req, res) => {
     res.json({ Status: true, user: req.user });
   });
-
-// Register
-// Example for hashing password during user registration
-router.post("/register", (req, res) => {
-    bcrypt.hash(req.body.password, 10, (err, hashedPassword) => {
-      if (err) return res.json({ Error: "Error hashing password" });
-  
-      const sql = "INSERT INTO users (email, password, role) VALUES (?, ?, ?)";
-      const values = [req.body.email, hashedPassword, req.body.role];
-      con.query(sql, values, (err, result) => {
-        if (err) return res.json({ Error: "Database error" });
-        res.json({ message: "User registered successfully" });
-      });
-    });
-  });
-  
-
-// Logout
-router.get("/logout", (req, res) => {
-  res.clearCookie("token");
-  return res.json({ Status: true });
-});
 
 module.exports = router;
