@@ -1,15 +1,14 @@
 -- Users Table
 CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255) NOT NULL,
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    role ENUM('admin', 'client') NOT NULL,
-    email VARCHAR(255) NOT NULL;
+    roleid int NOT NULL;
 );
 
 -- Clients Table
   CREATE TABLE clients (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    client_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     user_id INT NOT NULL,
     company_id VARCHAR(100) DEFAULT NULL,
@@ -21,17 +20,29 @@ CREATE TABLE users (
     state VARCHAR(25) DEFAULT NULL,
     owner_address VARCHAR(100) DEFAULT NULL,
     phone_num VARCHAR(15) DEFAULT NULL;
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 -- Employees Table
 CREATE TABLE employees (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    position VARCHAR(255) NOT NULL,
-    salary DECIMAL(10, 2) NOT NULL,
+    employee_id INT AUTO_INCREMENT PRIMARY KEY,
     client_id INT NOT NULL,
-    FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
+    first_name VARCHAR(100) NOT NULL,
+    middle_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    ssn VARCHAR(11) NOT NULL,
+    street_address VARCHAR(255) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    state VARCHAR(2) NOT NULL,
+    date_of_birth date NOT NULL,
+    hire_date date NOT NULL,
+    job_title VARCHAR(255) NOT NULL,
+    i9_date date NOT NULL,
+    w4_date date NOT NULL,
+    dependents int NOT NULL,
+    marital_status enum('single','married_jointly','married_separately','head_of_household'),
+    employment_status enum('full_time','part_time','temporary'),
+    FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE CASCADE
 );
 
 ALTER TABLE clients 
