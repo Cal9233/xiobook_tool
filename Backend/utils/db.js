@@ -21,28 +21,28 @@ con.connect(function(err) {
     }
 })
 
-async function updateAdminPassword() {
-    try {
-        // Hash the password
-        const hashedPassword = await bcrypt.hash('test123', 10);
+// async function updateAdminPassword() {
+//     try {
+//         // Hash the password
+//         const hashedPassword = await bcrypt.hash('test123', 10);
         
-        // Update the admin user's password
-        const sql = "UPDATE users SET password = ? WHERE email = ?";
+//         // Update the admin user's password
+//         const sql = "UPDATE users SET password = ? WHERE email = ?";
         
-        con.query(sql, [hashedPassword, 'user1@company.com'], (err, result) => {
-            if (err) {
-                console.error('Error updating password:', err);
-                process.exit(1);
-            }
-            console.log('Admin password updated successfully');
-            process.exit(0);
-        });
+//         con.query(sql, [hashedPassword, 'user1@company.com'], (err, result) => {
+//             if (err) {
+//                 console.error('Error updating password:', err);
+//                 process.exit(1);
+//             }
+//             console.log('Admin password updated successfully');
+//             process.exit(0);
+//         });
         
-    } catch (error) {
-        console.error('Error:', error);
-        process.exit(1);
-    }
-}
+//     } catch (error) {
+//         console.error('Error:', error);
+//         process.exit(1);
+//     }
+// }
 
 //updateAdminPassword();
 
