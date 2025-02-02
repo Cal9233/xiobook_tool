@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import './style.css'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Login = () => {
     const [values, setValues] = useState({
@@ -23,6 +25,7 @@ const Login = () => {
                 navigate('/dashboard')
             } else {
                 setError(result.data.Error)
+                toast.error(result.data.Error || 'An unknown error occurred!');
             }
         })
         .catch(err => console.log(err))
@@ -49,6 +52,7 @@ const Login = () => {
                 <button className='btn btn-success w-100 rounded-0 mb-2'>Log in</button>
             </form>
         </div>
+        <ToastContainer />
     </div>
   )
 }

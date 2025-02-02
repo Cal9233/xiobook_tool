@@ -1,3 +1,9 @@
+-- First, create the database
+CREATE DATABASE xiobook_stage;
+
+-- Use the database
+USE xiobook_stage;
+
 -- Users Table
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
