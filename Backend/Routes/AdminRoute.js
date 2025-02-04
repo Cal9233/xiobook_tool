@@ -518,7 +518,7 @@ router.post("/register", async (req, res) => {
         }
 
         // Query to find user
-        const sql = "SELECT username, email, password, role FROM users WHERE email = ? LIMIT 1";
+        const sql = "SELECT user_id, username, email, password, role FROM users WHERE email = ? LIMIT 1";
         console.log("SQL Query:", sql);
         console.log("Searching for email:", email);
         
