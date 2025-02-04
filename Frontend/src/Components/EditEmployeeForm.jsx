@@ -86,6 +86,7 @@ const EditEmployeeForm = () => {
                 toast.error('Error loading employee data');
             });
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id, employeeData]);
     
     const handleFieldChange = (e, field) => {

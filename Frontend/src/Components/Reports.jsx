@@ -24,6 +24,7 @@ const Reports = () => {
             }
           })
           .catch((err) => toast.error("Error fetching data"));
+          // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleClientSelect = (clientId, type = summaryType) => {

@@ -1,12 +1,12 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Client = () => {
   const [client, setClient] = useState([]);
-  const navigate = useNavigate()
+
   const user = JSON.parse(localStorage.getItem('user'))
   let userId = user.id;
   const server_URI = process.env.REACT_APP_API_URL;
@@ -22,6 +22,7 @@ const Client = () => {
         }
       })
       .catch((err) => console.log(err));
+      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [client]);
 
   const handleDelete = (id, clientName) => {

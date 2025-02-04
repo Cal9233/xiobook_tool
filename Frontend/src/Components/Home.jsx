@@ -11,6 +11,7 @@ const Home = () => {
   useEffect(() => {
     employeeCount();
     AdminRecords();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const server_URI = process.env.REACT_APP_API_URL;

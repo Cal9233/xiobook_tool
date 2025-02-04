@@ -29,7 +29,7 @@ con.connect(function(err) {
 //         // Update the admin user's password
 //         const sql = "UPDATE users SET password = ? WHERE email = ?";
         
-//         con.query(sql, [hashedPassword, 'user1@company.com'], (err, result) => {
+//         con.query(sql, [hashedPassword, 'admin@admin.com'], (err, result) => {
 //             if (err) {
 //                 console.error('Error updating password:', err);
 //                 process.exit(1);
@@ -44,6 +44,6 @@ con.connect(function(err) {
 //     }
 // }
 
-//updateAdminPassword();
+// updateAdminPassword();
 
 module.exports = con;

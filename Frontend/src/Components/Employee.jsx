@@ -12,6 +12,7 @@ const EmployeeList = () => {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const server_URI = process.env.REACT_APP_API_URL;

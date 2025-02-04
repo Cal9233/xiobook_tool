@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -22,8 +22,8 @@ const AddEmployee = () => {
     marital_status: "",
     employment_status: ""
   });
-  const user = JSON.parse(localStorage.getItem('user'))
-  let userId = user.id
+  //const user = JSON.parse(localStorage.getItem('user'))
+  //let userId = user.id
   const location = useLocation();
   const clientId = location.state?.clientId;
   const navigate = useNavigate()

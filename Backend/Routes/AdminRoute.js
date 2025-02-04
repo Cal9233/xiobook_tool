@@ -486,26 +486,21 @@ router.post("/update-password", async (req, res) => {
   // Registration route - for new users
 router.post("/register", async (req, res) => {
     try {
-      const { email, password, role } = req.body;
-      
-      // Hash the password before storing
-      const hashedPassword = await bcrypt.hash(password, 10);
-      
-      const sql = "INSERT INTO users (email, password, roleid) VALUES (?, ?, ?)";
-      
-      con.query(sql, [email, hashedPassword, role], (err, result) => {
-        if (err) {
-          console.error("Registration error:", err);
-          return res.json({ Status: false, Error: "Registration failed" });
-        }
+        const { email, password, role } = req.body;
+        
+        // Hash the password before storing
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        const sql = "INSERT INTO users (email, password, roleid) VALUES (?, ?, ?)";
+        
+        const [result] = await pool.promise().query(sql, [email, hashedPassword, role]);
         return res.json({ Status: true, Message: "Registration successful" });
-      });
-      
+        
     } catch (error) {
-      console.error("Registration error:", error);
-      return res.status(500).json({ Status: false, Error: "Internal server error" });
+        console.error("Registration error:", error);
+        return res.status(500).json({ Status: false, Error: "Internal server error" });
     }
-  });
+});
 
   // Login route
   router.post("/adminlogin", async (req, res) => {
@@ -523,7 +518,7 @@ router.post("/register", async (req, res) => {
         }
 
         // Query to find user
-        const sql = "SELECT user_id, email, password, roleid FROM users WHERE email = ? LIMIT 1";
+        const sql = "SELECT username, email, password, role FROM users WHERE email = ? LIMIT 1";
         console.log("SQL Query:", sql);
         console.log("Searching for email:", email);
         
