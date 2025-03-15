@@ -11,4 +11,5 @@ Pop window will contain employyeeForm fields + pay date () + period
 Reports tab on dashboard:
 Summary of payments of all employees for specific client (Total income of all fields)
 Option of returning per month, or per quartly, or annually
-- Fix the period filter that reflects it
+
+- Fix the period filter that reflects it+

@@ -1,24 +1,23 @@
 import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
-import Login from './Components/Login'
+import Login from './pages/Login'
 import {BrowserRouter, Routes, Route} from 'react-router-dom'
-import Dashboard from './Components/Dashboard'
-import Home from './Components/Home'
-import Employee from './Components/Employee'
-import Clients from './Components/Clients'
-import AddCategory from './Components/AddCategory'
-import AddEmployee from './Components/AddEmployee'
-import EditEmployee from './Components/EditEmployee'
-import Start from './Components/Start'
-import EmployeeLogin from './Components/EmployeeLogin'
-import EmployeeDetail from './Components/EmployeeDetail'
-import PrivateRoute from './Components/PrivateRoute'
-import EditClient from './Components/EditClient'
-import AddClient from './Components/AddClient'
-import Calculator from './Components/Calculator'
-import EmployeeForm from './Components/EmployeeForm'
-import Reports from './Components/Reports'
-import EditEmployeeForm from './Components/EditEmployeeForm';
+import Dashboard from './pages/Dashboard'
+import Home from './pages/Home'
+import Employee from './pages/Employee'
+import Clients from './pages/Clients'
+import AddEmployee from './pages/AddEmployee'
+import EditEmployee from './pages/EditEmployee'
+import Start from './pages/Start'
+import EmployeeLogin from './pages/EmployeeLogin'
+import EmployeeDetail from './pages/EmployeeDetail'
+import PrivateRoute from './pages/PrivateRoute'
+import EditClient from './pages/EditClient'
+import AddClient from './pages/AddClient'
+import Calculator from './pages/Calculator'
+import EmployeeForm from './pages/EmployeeForm'
+import Reports from './pages/Reports'
+import EditEmployeeForm from './pages/EditEmployeeForm';
 
 function App() {
   return (
@@ -38,7 +37,6 @@ function App() {
         <Route path='/dashboard/clients' element={<Clients />}></Route>
         <Route path='/dashboard/add_client' element={<AddClient />}></Route>
         <Route path='/dashboard/edit_client/:id' element={<EditClient />}></Route>
-        <Route path='/dashboard/add_category' element={<AddCategory />}></Route>
         <Route path='/dashboard/add_employee' element={<AddEmployee />}></Route>
         <Route path='/dashboard/edit_employee/:id' element={<EditEmployee />}></Route>
         <Route path='/dashboard/calculator/:employeeId' element={<Calculator />}></Route>
