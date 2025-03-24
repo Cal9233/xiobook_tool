@@ -24,29 +24,76 @@ export const FormField: React.FC<FormFieldProps> = ({
         placeholder = label,
         disabled = false,
         required = false,
-        autoComplete
+        autoComplete,
+        options = []
     } = field;
+
+    const renderInput = () => {
+        switch (type) {
+            case 'select':
+                return (
+                    <select
+                        id={name}
+                        name={name}
+                        value={value || ''}
+                        onChange={onChange}
+                        disabled={disabled}
+                        required={required}
+                        className={`form-control ${error ? 'is-invalid' : ''}`}
+                        {...props}
+                    >
+                        {options.map(option => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                );
+            case 'number':
+                return (
+                    <Input 
+                        id={name}
+                        name={name}
+                        type={type}
+                        value={value || ''}
+                        onChange={onChange}
+                        placeholder={placeholder}
+                        disabled={disabled}
+                        required={required}
+                        autoComplete={autoComplete}
+                        min={0}
+                        className={`form-control ${error ? 'is-invalid' : ''}`}
+                        {...props}
+                    />
+                );
+            default:
+                return (
+                    <Input 
+                        id={name}
+                        name={name}
+                        type={type}
+                        value={value || ''}
+                        onChange={onChange}
+                        placeholder={placeholder}
+                        disabled={disabled}
+                        required={required}
+                        autoComplete={autoComplete}
+                        className={`form-control ${error ? 'is-invalid' : ''}`}
+                        {...props}
+                    />
+                );
+        }
+    };
+
     return (
         <InputContainer className={`form-field ${className}`}>
             <Label
                 htmlFor={name}
-                className={`form-label ${required ? required : ''}`}
+                className={`form-label ${required ? 'required' : ''}`}
             >
                 {label}
             </Label>
-            <Input 
-                id={name}
-                name={name}
-                type={type}
-                value={value || ''}
-                onChange={onChange}
-                placeholder={placeholder}
-                disabled={disabled}
-                required={required}
-                autoComplete={autoComplete}
-                className={`form-control ${error ? 'is-invalid' : ''}`}
-                {...props}
-            />
+            {renderInput()}
             {error && <div className='invalid-feedback'>{error}</div>}
         </InputContainer>
     )

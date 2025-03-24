@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Table, { TableColumn }  from '../components/Table/Table';
 
 interface AdminProps {
   name: string;
@@ -11,9 +12,12 @@ const Home = () => {
   const [clientTotal, setClientTotal] = useState(0);
   const [employeeTotal, setEmployeeTotal] = useState(0);
   const [admins, setAdmins] = useState<AdminProps[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
+    setIsLoading(true);
     employeeCount();
     AdminRecords();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -30,25 +34,60 @@ const Home = () => {
         setAdmins(result.data.Result)
         setClientTotal(result.data.Result.length)
       }
+      setIsLoading(false);
     })
-    .catch(err => console.log(err))
+    .catch(err => {
+      console.log(err);
+      setError('Failed to load client data');
+      setIsLoading(false);
+    })
   }
 
-const employeeCount = () => {
-  let user = JSON.parse(localStorage.getItem('user') || "''")
-  let userId = user.id
-  axios.get(`${server_URI}auth/employees/all/${userId}`)
-  .then((result) => {
-    if(result.data.Status){
-      setEmployeeTotal(result.data.Result.length)
-    }
-  })
-  .catch((e) => console.log(e))
-}
+  const employeeCount = () => {
+    let user = JSON.parse(localStorage.getItem('user') || "''")
+    let userId = user.id
+    axios.get(`${server_URI}auth/employees/all/${userId}`)
+    .then((result) => {
+      if(result.data.Status){
+        setEmployeeTotal(result.data.Result.length)
+      }
+    })
+    .catch((e) => {
+      console.log(e);
+      setError('Failed to load employee data');
+    })
+  }
 
   const handleEdit = (userId: number) => {
     navigate(`/dashboard/edit_client/${userId}`);
   }
+
+  // Define table columns
+  const columns: TableColumn<AdminProps>[] = [
+    {
+      header: 'Client Name',
+      accessor: 'name',
+    },
+    {
+      header: 'Action',
+      accessor: (row) => (
+        <>
+          <button
+            className="btn btn-info btn-sm me-2"
+            onClick={() => handleEdit(row.client_id)}
+          >
+            Edit
+          </button>
+          <button
+            className="btn btn-warning btn-sm"
+          >
+            Delete
+          </button>
+        </>
+      ),
+      id: 'actions',
+    },
+  ];
 
   return (
     <div>
@@ -76,35 +115,16 @@ const employeeCount = () => {
       </div>
       <div className='mt-4 px-5 pt-3'>
         <h3>List of Clients</h3>
-        <table className='table'>
-          <thead>
-            <tr>
-              <th>Client Name</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {
-              admins.map((a, i) => (
-                <tr key={i}>
-                  <td>{a.name}</td>
-                  <td>
-                    <button
-                      className="btn btn-info btn-sm me-2"
-                      onClick={() => handleEdit(a.client_id)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-warning btn-sm" >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            }
-          </tbody>
-        </table>
+        <Table
+          data={admins}
+          columns={columns}
+          keyField="client_id"
+          isLoading={isLoading}
+          error={error}
+          emptyMessage="No clients available"
+          tableClassName="table table-hover"
+          headerClassName="table-light"
+        />
       </div>
     </div>
   )

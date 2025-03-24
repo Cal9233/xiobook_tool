@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Table, { TableColumn } from '../components/Table/Table';
 
 // For basic employee data
 interface Employee {
@@ -49,43 +50,67 @@ interface SummaryItem {
     sdi: number;
     ca_pit_wh: number;
     net_wages: number;
+    isTotal?: boolean;
 }
 
 const Reports = () => {
     const [client, setClient] = useState<ClientProps[]>([]);
     const [selectedClient, setSelectedClient] = useState<ClientProps | null>(null);
-    const [employeeSummary, setEmployeeSummary] = useState<any[]>([]);
+    const [employeeSummary, setEmployeeSummary] = useState<SummaryItem[]>([]);
     const [summaryType, setSummaryType] = useState('monthly');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+    
     const server_URI = process.env.REACT_APP_API_URL;
 
     const user = JSON.parse(localStorage.getItem('user') || "''");
     const userId = user.id;
 
     useEffect(() => {
+        setIsLoading(true);
         axios
           .get(`${server_URI}auth/reports/all/${userId}`)
           .then((result) => {
             if (result.data.Status) {
               setClient(result.data.data);
             } else {
+              setError(result.data.Error);
               toast.error(result.data.Error);
             }
+            setIsLoading(false);
           })
-          .catch((err) => toast.error("Error fetching data"));
+          .catch((err) => {
+            setError("Error fetching data");
+            toast.error("Error fetching data");
+            setIsLoading(false);
+          });
           // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleClientSelect = (clientId: number, type = summaryType) => {
-        const selectedClientData = client.find(c => c.client_id === clientId || null);
-        const safeSelectedClientData = selectedClientData === undefined ? null : selectedClientData;
-        const employees = safeSelectedClientData ? safeSelectedClientData.employee_list : [];
+        if (!clientId) {
+            setSelectedClient(null);
+            setEmployeeSummary([]);
+            return;
+        }
+
+        setIsLoading(true);
+        const selectedClientData = client.find(c => c.client_id === clientId) || null;
+        const employees = selectedClientData ? selectedClientData.employee_list : [];
         
-        const aggregatedSummary = aggregateEmployeeData(employees, type);
-        setSelectedClient(safeSelectedClientData);
-        setEmployeeSummary(aggregatedSummary);
+        try {
+            const aggregatedSummary = aggregateEmployeeData(employees, type);
+            setSelectedClient(selectedClientData);
+            setEmployeeSummary(aggregatedSummary);
+            setError(null);
+        } catch (err) {
+            setError("Error processing report data");
+            toast.error("Error processing report data");
+        }
+        setIsLoading(false);
     };
 
-    const aggregateEmployeeData = (employees: EmployeeWithInfo[], type: string) => {
+    const aggregateEmployeeData = (employees: EmployeeWithInfo[], type: string): SummaryItem[] => {
         const periodGroups: Record<string, SummaryItem> = {};
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         
@@ -143,113 +168,156 @@ const Reports = () => {
                     const monthDiff = monthNames.indexOf(monthA) - monthNames.indexOf(monthB);
                     if (monthDiff !== 0) return monthDiff;
                     
-                    return Number(periodA) - Number(periodB);
+                    return periodA === '1st part' ? -1 : 1;
                 }
-                return new Date(a.period).getTime() - new Date(b.period).getTime();
+                
+                if (type === 'quarterly') {
+                    const [quarterA, yearA] = a.period.split(' ');
+                    const [quarterB, yearB] = b.period.split(' ');
+                    
+                    const yearDiff = Number(yearA) - Number(yearB);
+                    if (yearDiff !== 0) return yearDiff;
+                    
+                    return quarterA.localeCompare(quarterB);
+                }
+                
+                // For monthly and annually
+                return a.period.localeCompare(b.period);
             });
         
-        const totalRow = summaryArray.reduce((acc, curr) => ({
-            period: `Total`,
-            gross_wages: (acc.gross_wages || 0) + curr.gross_wages,
-            fed_income_tax_wh: (acc.fed_income_tax_wh || 0) + curr.fed_income_tax_wh,
-            soc_sec: (acc.soc_sec || 0) + curr.soc_sec,
-            medicare: (acc.medicare || 0) + curr.medicare,
-            sdi: (acc.sdi || 0) + curr.sdi,
-            ca_pit_wh: (acc.ca_pit_wh || 0) + curr.ca_pit_wh,
-            net_wages: (acc.net_wages || 0) + curr.net_wages
-        }), {
-            period: `Total`,
-            gross_wages: 0,
-            fed_income_tax_wh: 0,
-            soc_sec: 0,
-            medicare: 0,
-            sdi: 0,
-            ca_pit_wh: 0,
-            net_wages: 0
-        });
+        // Calculate the total row
+        const totalRow: SummaryItem = {
+            period: 'Total',
+            gross_wages: summaryArray.reduce((sum, row) => sum + row.gross_wages, 0),
+            fed_income_tax_wh: summaryArray.reduce((sum, row) => sum + row.fed_income_tax_wh, 0),
+            soc_sec: summaryArray.reduce((sum, row) => sum + row.soc_sec, 0),
+            medicare: summaryArray.reduce((sum, row) => sum + row.medicare, 0),
+            sdi: summaryArray.reduce((sum, row) => sum + row.sdi, 0),
+            ca_pit_wh: summaryArray.reduce((sum, row) => sum + row.ca_pit_wh, 0),
+            net_wages: summaryArray.reduce((sum, row) => sum + row.net_wages, 0),
+            isTotal: true
+        };
     
         return [...summaryArray, totalRow];
+    };
+
+    // Define table columns for the summary table
+    const summaryColumns: TableColumn<SummaryItem>[] = [
+        {
+            header: 'Period',
+            accessor: 'period'
+        },
+        {
+            header: 'Gross Wages',
+            accessor: (row) => `$${row.gross_wages.toFixed(2)}`
+        },
+        {
+            header: 'Fed Income Tax',
+            accessor: (row) => `$${row.fed_income_tax_wh.toFixed(2)}`
+        },
+        {
+            header: 'Social Security',
+            accessor: (row) => `$${row.soc_sec.toFixed(2)}`
+        },
+        {
+            header: 'Medicare',
+            accessor: (row) => `$${row.medicare.toFixed(2)}`
+        },
+        {
+            header: 'S.D.I.',
+            accessor: (row) => `$${row.sdi.toFixed(2)}`
+        },
+        {
+            header: 'C.P.I.T.',
+            accessor: (row) => `$${row.ca_pit_wh.toFixed(2)}`
+        },
+        {
+            header: 'Net Wages',
+            accessor: (row) => `$${row.net_wages.toFixed(2)}`
+        }
+    ];
+
+    // Custom row class names based on whether the row is a total row
+    const getRowClassName = (row: SummaryItem): string => {
+        return row.isTotal ? 'table-primary fw-bold' : '';
     };
     
     return (
         <div className="px-5 mt-3">
-            <div className="d-flex justify-content-center">
+            <div className="d-flex justify-content-center mb-4">
                 <h3>Client List and Reports</h3>
             </div>
 
-            {/* Client Selection Dropdown */}
-            <div className="mb-3">
-                <select 
-                    className="form-select" 
-                    onChange={(e) => handleClientSelect(Number(e.target.value))}
-                >
-                    <option value="">Select a Client</option>
-                    {client.map((c) => (
-                        <option key={c.client_id} value={c.client_id}>
-                            {c.client_name || c.company_name}
-                        </option>
-                    ))}
-                </select>
-            </div>
+            <div className="row mb-4">
+                {/* Client Selection Dropdown */}
+                <div className="col-md-6 mb-3">
+                    <label htmlFor="clientSelect" className="form-label">Select Client</label>
+                    <select 
+                        id="clientSelect"
+                        className="form-select" 
+                        onChange={(e) => handleClientSelect(Number(e.target.value))}
+                        disabled={isLoading}
+                    >
+                        <option value="">Select a Client</option>
+                        {client.map((c) => (
+                            <option key={c.client_id} value={c.client_id}>
+                                {c.client_name || c.company_name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
 
-            {/* Summary Type Selection */}
-            <div className="mb-3">
-                <select 
-                    className="form-select" 
-                    value={summaryType}
-                    onChange={(e) => {
-                        const newType = e.target.value;
-                        setSummaryType(e.target.value);
-                        if (selectedClient) {
-                            setTimeout(() => {
-                                handleClientSelect(selectedClient.client_id, newType);
-                            }, 0);
-                        }
-                    }}
-                >
-                    <option value="semi-monthly">Semi Monthly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="quarterly">Quarterly</option>
-                    <option value="annually">Annually</option>
-                </select>
+                {/* Summary Type Selection */}
+                <div className="col-md-6 mb-3">
+                    <label htmlFor="summaryType" className="form-label">Report Type</label>
+                    <select 
+                        id="summaryType"
+                        className="form-select" 
+                        value={summaryType}
+                        onChange={(e) => {
+                            const newType = e.target.value;
+                            setSummaryType(newType);
+                            if (selectedClient) {
+                                setTimeout(() => {
+                                    handleClientSelect(selectedClient.client_id, newType);
+                                }, 0);
+                            }
+                        }}
+                        disabled={isLoading || !selectedClient}
+                    >
+                        <option value="semi-monthly">Semi Monthly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="quarterly">Quarterly</option>
+                        <option value="annually">Annually</option>
+                    </select>
+                </div>
             </div>
 
             {/* Employee Summary Table */}
             {selectedClient && (
-                    <div>
-                        <h4>{selectedClient.client_name} - Employee Summary ({summaryType.charAt(0).toUpperCase() + summaryType.slice(1)})</h4>
-                        <table className="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Period</th>
-                                    <th>Gross Wages</th>
-                                    <th>Fed Income Tax</th>
-                                    <th>Social Security</th>
-                                    <th>Medicare</th>
-                                    <th>S.D.I.</th>
-                                    <th>C.P.I.T.</th>
-                                    <th>Net Wages</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            {employeeSummary.map((emp, index) => (
-                                <tr key={index} className={index === employeeSummary.length - 1 ? 'table-primary fw-bold' : ''}>
-                                    <td>{emp.period}</td>
-                                    <td>${emp.gross_wages.toFixed(2)}</td>
-                                    <td>${emp.fed_income_tax_wh.toFixed(2)}</td>
-                                    <td>${emp.soc_sec.toFixed(2)}</td>
-                                    <td>${emp.medicare.toFixed(2)}</td>
-                                    <td>${emp.sdi.toFixed(2)}</td>
-                                    <td>${emp.ca_pit_wh.toFixed(2)}</td>
-                                    <td>${emp.net_wages.toFixed(2)}</td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
+                <div className="card shadow-sm">
+                    <div className="card-header bg-light">
+                        <h4 className="m-0">
+                            {selectedClient.client_name || selectedClient.company_name} - Employee Summary ({summaryType.charAt(0).toUpperCase() + summaryType.slice(1)})
+                        </h4>
                     </div>
-                )}
+                    <div className="card-body">
+                        <Table
+                            data={employeeSummary}
+                            columns={summaryColumns}
+                            keyField="period"
+                            isLoading={isLoading}
+                            error={error}
+                            emptyMessage="No data available for the selected period"
+                            tableClassName="table table-hover table-striped"
+                            headerClassName="table-light"
+                            rowClassName={getRowClassName}
+                        />
+                    </div>
+                </div>
+            )}
 
-            <ToastContainer />
+            <ToastContainer position="top-right" autoClose={5000} />
         </div>
     );
 };

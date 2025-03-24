@@ -9,7 +9,7 @@ export interface BaseProps {
 }
 
 // Input field configuration
-export type FieldType = 'text' | 'email' | 'password' | 'number' | 'tel' | 'date';
+export type FieldType = 'text' | 'email' | 'password' | 'number' | 'tel' | 'date' | 'select';
 
 // Form field configuration
 export interface FieldConfig {
@@ -21,6 +21,7 @@ export interface FieldConfig {
     disabled?: boolean;
     autoComplete?: string;
     validation?: (value: any) => string | undefined;
+    options?: Array<{value: string, label: string}>;
 }
 
 // Form values type - generic to support any structure
@@ -31,8 +32,8 @@ export type FormChangeHandler<T = FormValues> =
     (name: keyof T, value: any) => void;
 
 export type InputChangeHandler =
-    (e: ChangeEvent<HTMLInputElement>) => void;
+    (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
 
 // Form submission handler types
-export type FormSubmittedHandler<T = FormValues> =
+export type FormSubmitedHandler<T = FormValues> =
     (values: T) => void | Promise<void>;

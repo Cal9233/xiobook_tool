@@ -3,6 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Header from "../components/Header/Header";
+import GroupedTable from "../components/Table/GroupedTable";
+import { TableColumn } from "../components/Table/Table";
 
 interface ClientProps {
   client_id: number;
@@ -40,7 +43,7 @@ interface EmployeeObj {
 interface EmployeeGroup {
   clientName: string;
   clientId: number;
-  employees: EmployeeObj[]; // Replace 'any' with your employee type if available
+  employees: EmployeeObj[];
 }
 
 interface GroupedEmployees {
@@ -48,49 +51,57 @@ interface GroupedEmployees {
 }
 
 const EmployeeList = () => {
-  const [groupedEmployees, setGroupedEmployees] = useState<GroupedEmployees>({});
-  const user = JSON.parse(localStorage.getItem('user') || "''");
+  const [groupedEmployees, setGroupedEmployees] = useState<Record<number, EmployeeGroup>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  
+  const user = JSON.parse(localStorage.getItem('user') || "{}");
   const userId = user.id;
-  let navigate = useNavigate()
+  const server_URI = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const employeesResponse = await axios.get(`${server_URI}auth/employees/all/${userId}`);
+        const clientsResponse = await axios.get(`${server_URI}auth/clients/all/${userId}`);
+        
+        if (employeesResponse.data.Status && clientsResponse.data.Status) {
+          const initialGroups: Record<number, EmployeeGroup> = {};
+          
+          clientsResponse.data.Result.forEach((client: ClientProps) => {
+            initialGroups[client.client_id] = {
+              clientName: client.name || client.company_name,
+              clientId: client.client_id,
+              employees: []
+            };
+          });
+          
+          employeesResponse.data.Result.forEach((employee: EmployeeObj) => {
+            const clientId = employee.client_id;
+            if (initialGroups[clientId]) {
+              initialGroups[clientId].employees.push(employee);
+            }
+          });
+          
+          setGroupedEmployees(initialGroups);
+          setError(null);
+        } else {
+          setError('Failed to fetch data');
+          toast.error('Failed to fetch data');
+        }
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError('Error loading employees');
+        toast.error("Error loading employees");
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
-
-  const server_URI = process.env.REACT_APP_API_URL;
-
-  // Move fetchData outside useEffect so we can reuse it if needed
-  const fetchData = async () => {
-    try {
-      const employeesResponse = await axios.get(`${server_URI}auth/employees/all/${userId}`);
-      const clientsResponse = await axios.get(`${server_URI}auth/clients/all/${userId}`);
-      
-      if (employeesResponse.data.Status && clientsResponse.data.Status) {
-        const initialGroups: GroupedEmployees = {};
-        
-        clientsResponse.data.Result.forEach((client: ClientProps) => {
-          initialGroups[client.client_id] = {
-            clientName: client.name || client.company_name,
-            clientId: client.client_id,
-            employees: []
-          };
-        });
-        
-        employeesResponse.data.Result.forEach((employee: EmployeeObj) => {
-          const clientId = employee.client_id;
-          if (initialGroups[clientId]) {
-            initialGroups[clientId].employees.push(employee);
-          }
-        });
-        
-        setGroupedEmployees(initialGroups);
-      }
-    } catch (err) {
-      console.error("Error fetching data:", err);
-      toast.error("Error loading employees");
-    }
-  };
 
   const handleDelete = async (id: number, employeeName: string) => {
     try {
@@ -99,7 +110,7 @@ const EmployeeList = () => {
         
         if (result.data.Status) {
           // Create new object with the employee removed
-          const updatedGroups: GroupedEmployees = {};
+          const updatedGroups: Record<number, EmployeeGroup> = {};
           
           // Loop through each client group
           Object.entries(groupedEmployees).forEach(([clientId, clientData]) => {
@@ -126,7 +137,6 @@ const EmployeeList = () => {
       const response = await axios.get(`${server_URI}auth/employee_info/${employeeId}`);
       
       if (response.data.Status && response.data.Result) {
-        // Use React Router navigation instead of window.location
         navigate(`/dashboard/calculator/${employeeId}`, {
           state: { employeeInfo: response.data.Result }
         });
@@ -139,85 +149,100 @@ const EmployeeList = () => {
     }
   };
   
+  const employeeColumns: TableColumn<EmployeeObj>[] = [
+    {
+      header: 'Name',
+      accessor: (employee) => `${employee.first_name} ${employee.middle_name ? employee.middle_name + ' ' : ''}${employee.last_name}`
+    },
+    {
+      header: 'Actions',
+      accessor: (employee) => (
+        <div className="d-flex gap-2">
+          <Link
+            to={`/dashboard/edit_employee/${employee.employee_id}`}
+            className="btn btn-outline-primary btn-sm"
+          >
+            Edit
+          </Link>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(employee.employee_id, `${employee.first_name} ${employee.last_name}`);
+            }}
+            className="btn btn-outline-danger btn-sm"
+          >
+            Delete
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEmployeePayments(employee.employee_id);
+            }}
+            className="btn btn-outline-success btn-sm"
+          >
+            Employee Payments
+          </button>
+          <Link
+            to={`/dashboard/employeeform/${employee.employee_id}`}
+            className="btn btn-outline-secondary btn-sm"
+          >
+            Add Wages
+          </Link>
+        </div>
+      )
+    }
+  ];
+
+  if (loading) {
+    return (
+      <div className="text-center py-5">
+        <div className="spinner-border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="alert alert-danger" role="alert">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="px-5 mt-3">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">Employee List by Client</h2>
+        <Header variant="h2">Employee List by Client</Header>
       </div>
 
-      <div className="client-groups">
-        {Object.entries(groupedEmployees).map(([clientId, { clientName, employees }]) => (
-          <div key={clientId} className="card mb-4">
-            <div className="card-header">
-              <div className="d-flex justify-content-between align-items-center">
-                <h3 className="mb-0">{clientName}</h3>
-                <Link 
-                  to="/dashboard/add_employee"
-                  state={{ clientId: clientId }}
-                  className="btn btn-success btn-sm"
-                >
-                  Add Employee
-                </Link>
-              </div>
-            </div>
-            <div className="card-body">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {employees.length > 0 ? (
-                    employees.map((employee: EmployeeObj) => (
-                      <tr key={employee.employee_id}>
-                        <td>{employee.first_name} {employee.last_name}</td>
-                        <td>
-                          <div className="d-flex gap-2">
-                            <Link
-                              to={`/dashboard/edit_employee/${employee.employee_id}`}
-                              className="btn btn-info btn-sm"
-                            >
-                              Edit
-                            </Link>
-                            <button
-                              onClick={() => handleDelete(employee.employee_id, employee.first_name)}
-                              className="btn btn-warning btn-sm"
-                            >
-                              Delete
-                            </button>
-                            <button
-                              onClick={() => handleEmployeePayments(employee.employee_id)}
-                              className="btn btn-sm"
-                              style={{ backgroundColor: "#28a745", color: "white", border: "none" }}
-                            >
-                              Employee Payments
-                            </button>
-                            <Link
-                              to={`/dashboard/employeeform/${employee.employee_id}`}
-                              className="btn btn btn-sm"
-                            >
-                              Add Wages
-                            </Link>
-                          </div>
-                        </td>
-
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={2} className="text-center">No employees yet</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ))}
-      </div>
-      <ToastContainer />
+      <GroupedTable<EmployeeObj, EmployeeGroup, number>
+        groupedData={groupedEmployees}
+        columns={employeeColumns}
+        keyField="employee_id"
+        groupingConfig={{
+          groupKey: 'clientId',
+          groupLabel: 'clientName',
+          itemsKey: 'employees',
+          emptyGroupMessage: 'No employees yet',
+          groupActions: (group) => (
+            <Link 
+              to="/dashboard/add_employee"
+              state={{ clientId: group.clientId }}
+              className="btn btn-success btn-sm"
+            >
+              Add Employee
+            </Link>
+          )
+        }}
+        onRowClick={(employee) => {
+          // Optional: navigate to employee details
+          // navigate(`/dashboard/employee/${employee.employee_id}`);
+        }}
+      />
+      
+      <ToastContainer position="bottom-right" />
     </div>
   );
 };
